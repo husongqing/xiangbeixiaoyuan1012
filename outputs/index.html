@@ -1,0 +1,2990 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>向北小院 · 老乡共享生活平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    :root {
+      --primary: #C41E3A;
+      --primary-dark: #A01830;
+      --primary-light: #FFE4E8;
+      --secondary: #D4A574;
+      --bg: #F7F4F0;
+      --card: #FFFFFF;
+      --text: #2B2B2B;
+      --text-light: #666666;
+      --border: #E8E0D8;
+      --shadow: 0 4px 16px rgba(0,0,0,0.06);
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #E5E5E5; color: var(--text); }
+    #app-frame { width: 100%; max-width: 430px; margin: 0 auto; height: 100vh; position: relative; background: var(--bg); overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.12); }
+
+    /* 桌面端（电脑）套 iPhone 手机壳：标准 390×844 */
+    body.desktop { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at 50% 22%, #2b3a67 0%, #13172e 100%); }
+    body.desktop #app-frame {
+      position: relative;
+      transform: translateZ(0);
+      background: #000;
+      border: 14px solid #1a1a1a;
+      border-radius: 54px;
+      box-shadow: 0 40px 100px rgba(0,0,0,.7), inset 0 0 0 2px #2f2f2f;
+      width: 390px;
+      min-width: 390px;
+      max-width: 390px;
+      height: 844px;
+      min-height: 844px;
+      max-height: 844px;
+      margin: 0;
+    }
+    body.desktop .page { top: 44px; bottom: 34px; }
+    body.desktop .page.no-pb { padding-bottom: 0; }
+
+    /* 状态栏 & Home 指示条（仅桌面端显示） */
+    .status-bar {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; height: 44px;
+      align-items: center; justify-content: space-between;
+      padding: 0 28px 0 24px;
+      font-size: 15px; font-weight: 700; color: #fff;
+      background: var(--primary);
+      z-index: 300;
+    }
+    .status-bar .time { position: relative; z-index: 2; }
+    .status-bar .icons { position: relative; z-index: 2; font-size: 12px; letter-spacing: 1px; }
+    .status-bar .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 126px; height: 34px; background: var(--primary); border-radius: 0 0 22px 22px; z-index: 1;
+    }
+    .home-bar {
+      display: none;
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+      width: 134px; height: 5px; background: rgba(0,0,0,.3); border-radius: 3px; z-index: 300;
+    }
+    body.desktop .status-bar,
+    body.desktop .home-bar { display: flex; }
+    body.desktop .home-bar { display: block; }
+
+    .page { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; background: var(--bg); display: none; padding-bottom: 84px; }
+    .page.active { display: block; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+    .page.no-pb { padding-bottom: 0; }
+
+    /* Loading */
+    #loading {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: url('loading-bg.png') center / cover no-repeat;
+      color: white;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 72px 24px 56px;
+      overflow: hidden;
+    }
+    #loading.active { display: flex !important; }
+    #loading::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.1) 25%, rgba(0,0,0,0) 50%, rgba(0,0,0,.15) 75%, rgba(0,0,0,.45) 100%);
+      z-index: 1;
+    }
+    .loading-content { position: relative; z-index: 5; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .loading-logo {
+      width: 180px;
+      background: rgba(255,255,255,.96);
+      padding: 18px 22px;
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.35);
+      margin-bottom: 18px;
+    }
+    .loading-slogan { font-size: 19px; letter-spacing: 3px; color: #fff; font-weight: 700; text-shadow: 0 2px 10px rgba(0,0,0,.7); }
+    .loading-bottom { position: relative; z-index: 5; width: 100%; text-align: center; }
+    .loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,.35); border-radius: 2px; overflow: hidden; margin: 0 auto 12px; }
+    .loading-bar span { display: block; height: 100%; width: 0%; background: #fff; border-radius: 2px; animation: load 2s ease forwards; }
+    @keyframes load { to { width: 100%; } }
+    .loading-tips { font-size: 12px; color: rgba(255,255,255,.9); text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+
+    /* Header */
+    .header { position: sticky; top: 0; z-index: 100; background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 12px 16px 16px; border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); }
+    .header.home-header { border-radius: 0 !important; box-shadow: none !important; padding-bottom: 8px !important; }
+    .home-header .search-box { margin-bottom: 4px; }
+    .header.home-header + .banner { margin-top: 12px !important; border-radius: var(--radius) !important; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .header-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.15); font-size: 18px; }
+    .header-title { font-size: 17px; font-weight: 600; flex: 1; text-align: center; }
+    .header-right { width: 32px; }
+    .location { display: flex; align-items: center; gap: 4px; font-size: 13px; opacity: .95; }
+    .search-box { margin-top: 12px; background: rgba(255,255,255,.18); border-radius: 20px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.9); }
+    .search-box svg { width: 16px; height: 16px; opacity: .8; }
+
+    /* Bottom Nav */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; max-width: none; transform: none; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 200; }
+    body.desktop .bottom-nav { left: 0; right: 0; width: 100%; bottom: 0; border-radius: 0; border-bottom: none; padding-bottom: 24px; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; color: var(--text-light); cursor: pointer; transition: .2s; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-plus { width: 46px; height: 46px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 12px rgba(196,30,58,.35); margin-top: -18px; border: 3px solid var(--bg); }
+    .nav-plus svg { width: 24px; height: 24px; }
+
+    /* Cards & Sections */
+    .section { padding: 16px; }
+    .section-title { font-size: 17px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .section-title .more { font-size: 13px; color: var(--text-light); font-weight: 400; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); margin-bottom: 12px; }
+    .card-flat { background: var(--card); border-radius: var(--radius); padding: 12px; }
+
+    /* Banner */
+    .banner { position: relative; height: 150px; border-radius: var(--radius); overflow: hidden; margin: 0 16px; margin-top: 16px; box-shadow: var(--shadow); background: var(--card); }
+    .banner-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .5s; }
+    .banner-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+    .banner-cap { position: absolute; left: 14px; bottom: 16px; color: #fff; font-size: 15px; font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,.7); z-index: 2; }
+    .banner-cap small { display: block; font-size: 11px; font-weight: 400; opacity: .9; }
+    .banner-slide.active { opacity: 1; }
+    .banner-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+    .banner-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
+    .banner-dot.active { background: white; width: 14px; border-radius: 3px; }
+
+    /* Module Grid */
+    .module-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 16px; margin-top: 16px; }
+    .module-item { background: var(--card); border-radius: var(--radius); padding: 14px 8px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s; }
+    .module-item:active { transform: scale(.96); }
+    .module-icon { width: 44px; height: 44px; margin: 0 auto 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .module-name { font-size: 13px; font-weight: 600; }
+
+    /* Store Card */
+    .store-card { display: flex; gap: 12px; cursor: pointer; }
+    .store-img { width: 90px; height: 70px; border-radius: var(--radius-sm); background: #eee; flex-shrink: 0; object-fit: cover; }
+    .store-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .store-name { font-size: 15px; font-weight: 700; }
+    .store-meta { font-size: 12px; color: var(--text-light); display: flex; align-items: center; gap: 8px; }
+    .store-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: var(--primary-light); color: var(--primary); }
+    .tag.ended { background: #E5E7EB; color: #6B7280; }
+
+    /* Welfare Card */
+    .welfare-card { cursor: pointer; overflow: hidden; }
+    .welfare-cover { height: 160px; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 12px; position: relative; }
+    .welfare-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .welfare-status { position: absolute; top: 10px; right: 10px; font-size: 12px; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+    .welfare-status.open { background: rgba(196,30,58,.9); color: white; }
+    .welfare-status.ended { background: rgba(107,114,128,.85); color: white; }
+    .welfare-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+    .welfare-meta { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
+    .welfare-footer { display: flex; justify-content: space-between; align-items: center; }
+
+    /* Welfare Detail Carousel */
+    .welfare-carousel { height: 220px; margin: 0 !important; border-radius: 0; position: relative; overflow: hidden; }
+    .welfare-carousel .banner-slide img { object-position: center; }
+
+    /* Post Card */
+    .post-card { cursor: pointer; }
+    .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 14px; font-weight: 700; }
+    .post-author { font-size: 14px; font-weight: 600; }
+    .post-time { font-size: 11px; color: var(--text-light); }
+    .post-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; line-height: 1.4; }
+    .post-content { font-size: 13px; color: var(--text-light); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .post-footer { display: flex; gap: 16px; margin-top: 10px; font-size: 12px; color: var(--text-light); }
+    .post-footer span { display: flex; align-items: center; gap: 4px; }
+
+    /* Community masonry grid */
+    .community-banner { height: 120px; border-radius: var(--radius); overflow: hidden; margin: 0 16px 12px; box-shadow: var(--shadow); }
+    .community-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .community-grid { column-count: 2; column-gap: 12px; padding: 0 16px 16px; }
+    .post-card-v2 { break-inside: avoid; margin-bottom: 12px; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; }
+    .post-card-v2 .post-img { width: 100%; display: block; }
+    .post-card-v2 .post-body { padding: 10px; }
+    .post-card-v2 .post-title { font-size: 13px; font-weight: 600; line-height: 1.35; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .post-card-v2 .post-content { font-size: 12px; color: var(--text-light); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
+    .post-card-v2 .post-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-light); }
+    .post-card-v2 .post-meta .avatar { width: 20px; height: 20px; font-size: 10px; }
+    .post-card-v2 .post-like { margin-left: auto; display: flex; align-items: center; gap: 3px; }
+    .post-card-v2 .price-tag { color: var(--primary); font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+
+    /* Post media (帖子多图/多视频) */
+    .post-media { margin-top: 12px; }
+    .media-img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+    .media-img-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: var(--radius-sm); display: block; cursor: pointer; }
+    .media-video-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .video-tile { position: relative; border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; }
+    .video-tile img { width: 100%; height: 118px; object-fit: cover; display: block; }
+    .video-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.55); border: 1.5px solid rgba(255,255,255,.85); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; padding-left: 3px; }
+    .video-dur { position: absolute; right: 6px; bottom: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; }
+
+    /* Product */
+    .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .product-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); cursor: pointer; }
+    .product-img { height: 110px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .product-body { padding: 10px; }
+    .product-title { font-size: 13px; font-weight: 600; line-height: 1.3; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .product-price { color: var(--primary); font-size: 15px; font-weight: 700; }
+    .product-price small { font-size: 12px; }
+    .product-sold { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+    /* Lists */
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .list-item-desc { font-size: 12px; color: var(--text-light); }
+    .list-item-right { text-align: right; }
+    .status-badge { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: #E6F4EA; color: #1E8E3E; }
+    .status-badge.warning { background: #FFF3E0; color: #E65100; }
+    .status-badge.gray { background: #F0F0F0; color: #666; }
+    .list-item.selected { background: #FFF1F2; border-radius: var(--radius-sm); padding-left: 12px; padding-right: 12px; box-shadow: inset 3px 0 0 var(--primary); }
+
+    /* Detail */
+    .detail-hero { height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,.3); }
+    .detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .detail-body { padding: 16px; background: var(--bg); margin-top: -20px; border-radius: var(--radius) var(--radius) 0 0; position: relative; z-index: 2; }
+    #dining-detail.page { padding-bottom: 190px; }
+    .store-contact-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+    .phone-block { display: flex; align-items: center; gap: 10px; flex: 1; padding: 12px; background: #FFF5F6; border-radius: var(--radius-sm); color: var(--primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+    .phone-block svg, .phone-block .icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .navigate-btn { display: flex; align-items: center; gap: 6px; padding: 12px 16px; background: var(--primary); color: white; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; text-decoration: none; flex-shrink: 0; }
+    .navigate-btn svg, .navigate-btn .icon { width: 16px; height: 16px; flex-shrink: 0; }
+    .detail-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .detail-meta { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+    .detail-section { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .detail-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .detail-section p { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: 20px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: .2s; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; box-shadow: 0 4px 12px rgba(196,30,58,.3); }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-block { width: 100%; }
+    .btn-lg { padding: 14px; border-radius: 24px; font-size: 16px; }
+    .fixed-bottom-btn { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 398px; z-index: 210; }
+    body.desktop .fixed-bottom-btn { bottom: 100px; }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: white; }
+    .form-textarea { min-height: 100px; resize: vertical; }
+
+    /* Chips */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 8px 16px; border-radius: 18px; background: var(--bg-soft); border: 1px solid var(--border); font-size: 13px; color: var(--text); cursor: pointer; transition: .15s; }
+    .chip.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
+
+    /* Stepper */
+    .stepper { display: flex; align-items: center; gap: 10px; }
+    .step-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: white; color: var(--primary); font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .step-btn:active { transform: scale(.92); }
+    .step-qty { min-width: 18px; text-align: center; font-weight: 600; }
+
+    /* 预点菜 - 门店信息 */
+    .preorder-shop { background: #fff; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid var(--border); }
+    .preorder-shop-icon { width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .preorder-shop-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .preorder-shop-meta { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+    .preorder-shop-arrow { margin-left: auto; color: #bbb; font-size: 20px; }
+
+    /* 预点菜 - 左右布局 */
+    .preorder-layout { display: flex; height: calc(100% - 50px); }
+    .preorder-categories { width: 86px; flex-shrink: 0; background: #f2f2f2; overflow-y: auto; height: 100%; }
+    .preorder-category { padding: 16px 10px; text-align: center; font-size: 13px; color: var(--text-light); position: relative; cursor: pointer; transition: .2s; }
+    .preorder-category.active { background: #fff; color: var(--primary); font-weight: 700; }
+    .preorder-category.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; background: var(--primary); border-radius: 0 3px 3px 0; }
+    .preorder-menu { flex: 1; overflow-y: auto; padding: 10px 12px; padding-bottom: 90px; height: 100%; background: #fff; }
+    .preorder-menu-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .preorder-dish { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+    .preorder-dish-img { width: 78px; height: 78px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: #f0f0f0; }
+    .preorder-dish-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .preorder-dish-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .preorder-dish-desc { font-size: 11px; color: #999; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .preorder-dish-price { font-size: 16px; color: var(--primary); font-weight: 700; }
+    .preorder-dish-price small { font-size: 12px; }
+    .preorder-dish-action { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+    .preorder-add-btn { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+    .preorder-minus-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: white; color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+    .preorder-qty { min-width: 18px; text-align: center; font-size: 14px; font-weight: 600; }
+
+    /* 预点菜 - 底部购物车条 */
+    .preorder-cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; padding: 8px 16px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 220; }
+    body.desktop .preorder-cart-bar { bottom: 34px; }
+    .preorder-cart-icon { width: 44px; height: 44px; border-radius: 50%; background: #333; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; margin-right: 12px; }
+    .preorder-cart-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; background: var(--primary); color: white; border-radius: 50%; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .preorder-cart-info { flex: 1; }
+    .preorder-cart-total { font-size: 12px; color: var(--text-light); }
+    .preorder-cart-total strong { font-size: 20px; color: var(--primary); }
+    .preorder-cart-tip { font-size: 11px; color: #999; }
+    .preorder-cart-btn { background: #ccc; color: white; border: none; border-radius: 22px; padding: 10px 22px; font-size: 15px; font-weight: 600; }
+    .preorder-cart-btn.active { background: var(--primary); }
+
+    /* 确认预点单 */
+    .confirm-section { background: white; margin: 12px 16px; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+    .confirm-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+    .confirm-dish { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; }
+    .confirm-dish:last-child { border-bottom: none; }
+    .confirm-dish-name { font-size: 14px; color: var(--text); }
+    .confirm-dish-name span { color: #999; font-size: 12px; margin-left: 6px; }
+    .confirm-dish-price { font-size: 14px; font-weight: 700; color: var(--text); }
+    .confirm-total { display: flex; justify-content: space-between; padding-top: 12px; margin-top: 4px; border-top: 1px solid #f0f0f0; }
+    .confirm-total-label { font-size: 14px; color: var(--text-light); }
+    .confirm-total-price { font-size: 18px; color: var(--primary); font-weight: 700; }
+
+    /* 支付方式 */
+    .payment-option { display: flex; align-items: center; padding: 14px; background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; }
+    .payment-option.active { border-color: var(--primary); background: var(--primary-light); }
+    .payment-icon { width: 28px; height: 28px; border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .payment-icon.wechat { background: #07C160; color: white; }
+    .payment-icon.balance { background: #FFD700; color: #8B6914; }
+    .payment-name { flex: 1; font-size: 14px; font-weight: 600; }
+    .payment-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; }
+    .payment-option.active .payment-check { border-color: var(--primary); background: var(--primary); color: white; font-size: 12px; }
+
+    /* 包厢列表 */
+    .room-list { padding: 12px 16px; padding-bottom: 100px; }
+    .room-card { background: white; border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .room-card-img { width: 100%; height: 180px; object-fit: cover; display: block; }
+    .room-card-body { padding: 12px; }
+    .room-card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .room-card-meta { font-size: 12px; color: var(--text-light); margin-bottom: 8px; }
+    .room-card-tags { display: flex; gap: 6px; margin-bottom: 10px; }
+    .room-card-tag { font-size: 11px; padding: 3px 8px; background: var(--bg); border-radius: 10px; color: var(--text-light); }
+    .room-card-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .room-card-price { font-size: 18px; color: var(--primary); font-weight: 700; }
+    .room-card-price small { font-size: 12px; color: var(--text-light); font-weight: 400; }
+    .room-card-btn { background: var(--primary); color: white; border: none; border-radius: 16px; padding: 7px 16px; font-size: 13px; font-weight: 600; }
+
+    /* 包厢详情 */
+    .room-detail-hero { width: 100%; height: 220px; object-fit: cover; display: block; }
+    .room-detail-body { padding: 16px; padding-bottom: 200px; background: var(--bg); min-height: calc(100% - 220px); }
+    #room-detail.page { padding-bottom: 160px; }
+    #room-detail .fixed-bottom-btn { bottom: 34px; }
+    #pre-order-confirm .fixed-bottom-btn { bottom: 34px; }
+    .room-detail-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .room-detail-subtitle { font-size: 13px; color: var(--text-light); margin-bottom: 12px; }
+    .room-detail-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .room-detail-tag { font-size: 12px; padding: 5px 12px; background: white; border-radius: 12px; color: var(--text); }
+    .room-detail-section { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .room-detail-section-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .room-detail-desc { font-size: 14px; color: var(--text-light); line-height: 1.7; }
+    .room-detail-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .room-detail-gallery img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; }
+    .room-price-row { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+    .room-price-row .price { font-size: 24px; color: var(--primary); font-weight: 700; }
+    .room-price-row .unit { font-size: 13px; color: var(--text-light); }
+    .room-price-row .tip { font-size: 12px; color: #999; margin-left: auto; }
+    .room-form-tip { background: var(--primary-light); color: var(--primary); font-size: 12px; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 12px; line-height: 1.5; }
+
+    /* Profile */
+    .profile-header { background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 24px 16px 32px; border-radius: 0 0 var(--radius) var(--radius); }
+    .profile-user { display: flex; align-items: center; gap: 14px; }
+    .profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 24px; font-weight: 700; border: 3px solid rgba(255,255,255,.4); }
+    .profile-name { font-size: 20px; font-weight: 700; }
+    .profile-tags { display: flex; gap: 8px; margin-top: 8px; }
+    .profile-tag { font-size: 11px; padding: 3px 10px; background: rgba(255,255,255,.2); border-radius: 12px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; margin-top: 16px; }
+    .menu-item { cursor: pointer; }
+    .menu-icon { width: 44px; height: 44px; margin: 0 auto 6px; background: var(--card); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow); }
+    .menu-name { font-size: 12px; color: var(--text-light); }
+    .menu-list { margin-top: 16px; }
+    .menu-list-item { display: flex; align-items: center; justify-content: space-between; padding: 14px; background: var(--card); margin-bottom: 1px; cursor: pointer; }
+    .menu-list-item:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .menu-list-item:last-child { border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 0; }
+
+    /* Toast */
+    .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.9); background: rgba(0,0,0,.75); color: white; padding: 12px 20px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: .2s; z-index: 500; }
+    .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+    /* Action Sheet */
+    .action-sheet { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 400; opacity: 0; pointer-events: none; transition: .2s; display: flex; flex-direction: column; justify-content: flex-end; }
+    .action-sheet.show { opacity: 1; pointer-events: auto; }
+    .action-sheet-body { background: white; border-radius: var(--radius) var(--radius) 0 0; padding: 16px; transform: translateY(100%); transition: .25s; }
+    .action-sheet.show .action-sheet-body { transform: translateY(0); }
+    .action-sheet-title { text-align: center; font-size: 14px; color: var(--text-light); margin-bottom: 12px; }
+    .action-sheet-item { padding: 14px; text-align: center; font-size: 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .action-sheet-item:last-child { border-bottom: none; margin-top: 8px; font-weight: 700; color: var(--text-light); }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 12px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex-shrink: 0; padding: 8px 16px; border-radius: 18px; background: white; font-size: 13px; color: var(--text-light); border: 1px solid var(--border); cursor: pointer; }
+    .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* 东北商城 */
+    .mall-top { position: sticky; top: 0; z-index: 100; background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; }
+    .mall-top-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px 10px; }
+    .mall-search { flex: 1; display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 20px; padding: 8px 14px; }
+    .mall-search input { border: none; outline: none; flex: 1; font-size: 14px; color: var(--text); background: transparent; }
+    .mall-search input::placeholder { color: #999; }
+    .mall-actions { display: flex; align-items: center; gap: 14px; font-size: 18px; }
+    .mall-cart-icon { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .mall-cart-icon svg { width: 22px; height: 22px; }
+    .cart-badge { position: absolute; top: -6px; right: -8px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #FFD400; color: #7A0010; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    .cart-badge.hide { display: none; }
+    .mall-tabs { display: flex; gap: 0; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; }
+    .mall-tabs::-webkit-scrollbar { display: none; }
+    .mall-tab { flex-shrink: 0; padding: 8px 14px; font-size: 14px; color: rgba(255,255,255,.8); position: relative; cursor: pointer; }
+    .mall-tab.active { color: #fff; font-weight: 700; }
+    .mall-tab.active::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 22px; height: 3px; background: #fff; border-radius: 2px; }
+    .mall-tab.category-more { display: flex; align-items: center; gap: 4px; }
+
+    .mall-content { background: var(--bg); padding-bottom: 20px; }
+
+    /* 购物车 / 确认订单 通用 */
+    .cart-page { background: var(--bg); min-height: 100%; }
+    .cart-empty { text-align: center; padding: 80px 20px; color: var(--text-light); }
+    .cart-empty .ce-icon { font-size: 56px; margin-bottom: 12px; }
+    .cart-list { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+    .cart-item { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+    .cart-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: .15s; }
+    .cart-check.on { background: var(--primary); border-color: var(--primary); }
+    .cart-check svg { width: 12px; height: 12px; color: #fff; opacity: 0; }
+    .cart-check.on svg { opacity: 1; }
+    .cart-item img { width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; background: #f3f3f3; }
+    .cart-info { flex: 1; min-width: 0; }
+    .cart-name { font-size: 14px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .cart-price { color: var(--primary); font-weight: 700; font-size: 15px; margin-top: 6px; }
+    .cart-price small { font-size: 11px; font-weight: 400; }
+    .cart-stepper { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .cart-step-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); background: #fff; color: var(--primary); font-size: 16px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .cart-step-btn:active { transform: scale(.92); }
+    .cart-step-qty { min-width: 18px; text-align: center; font-weight: 600; font-size: 14px; }
+    .cart-del { color: #bbb; font-size: 18px; align-self: flex-start; cursor: pointer; padding: 0 2px; }
+
+    .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); z-index: 220; box-shadow: 0 -2px 10px rgba(0,0,0,.05); }
+    body.desktop .cart-bar { left: 0; right: 0; width: 100%; padding-bottom: 24px; }
+    .cart-bar .cart-check { margin-right: 8px; }
+    .cart-bar-label { font-size: 13px; color: var(--text); }
+    .cart-total { margin-left: auto; font-size: 13px; color: var(--text-light); }
+    .cart-total b { color: var(--primary); font-size: 18px; }
+    .cart-settle { margin-left: 12px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none; border-radius: 20px; padding: 9px 22px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    /* 确认订单 */
+    .confirm-page { background: var(--bg); min-height: 100%; }
+    .addr-card { display: flex; align-items: center; gap: 12px; background: #fff; margin: 12px; padding: 14px; border-radius: var(--radius); box-shadow: var(--shadow); cursor: pointer; }
+    .addr-pin { width: 38px; height: 38px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .addr-pin svg { width: 20px; height: 20px; }
+    .addr-main { flex: 1; }
+    .addr-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .addr-detail { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+    .addr-arrow { color: #bbb; font-size: 20px; }
+    .confirm-goods { background: #fff; margin: 0 12px 12px; border-radius: var(--radius); padding: 4px 14px; box-shadow: var(--shadow); }
+    .confirm-goods .cart-item { box-shadow: none; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .confirm-goods .cart-item:last-child { border-bottom: none; }
+    .confirm-row { display: flex; align-items: center; justify-content: space-between; background: #fff; margin: 0 12px 12px; padding: 14px; border-radius: var(--radius); font-size: 14px; box-shadow: var(--shadow); }
+    .confirm-row .label { color: var(--text); }
+    .confirm-row .val { color: var(--text-light); display: flex; align-items: center; gap: 6px; }
+    .confirm-row .val.primary { color: var(--primary); font-weight: 600; }
+    .confirm-note { background: #fff; margin: 0 12px 12px; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+    .confirm-note textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; color: var(--text); font-family: inherit; min-height: 44px; }
+    .pay-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border); display: flex; align-items: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); z-index: 220; box-shadow: 0 -2px 10px rgba(0,0,0,.05); }
+    body.desktop .pay-bar { left: 0; right: 0; width: 100%; padding-bottom: 24px; }
+    .pay-bar .pay-total { margin-left: auto; font-size: 13px; color: var(--text-light); }
+    .pay-bar .pay-total b { color: var(--primary); font-size: 19px; }
+    .pay-bar .pay-btn { margin-left: 12px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; border: none; border-radius: 20px; padding: 10px 26px; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+    .mall-card { background: white; border-radius: var(--radius); margin: 12px 16px; padding: 14px; box-shadow: var(--shadow); }
+    .mall-banner { margin: 12px 16px 0; }
+    .mall-banner .banner-slide img { object-position: center; }
+
+    .kingkong-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 8px; text-align: center; }
+    .king-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; transition: transform .15s; }
+    .king-item:active { transform: scale(.94); }
+    .king-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 10px rgba(0,0,0,.12); position: relative; overflow: hidden; }
+    .king-icon::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); pointer-events: none; }
+    .king-icon svg { width: 25px; height: 25px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.15)); position: relative; z-index: 1; }
+    .king-item span { font-size: 12px; color: var(--text); font-weight: 500; }
+
+    .headline-card { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+    .headline-label { color: var(--primary); font-weight: 700; font-size: 14px; font-style: italic; white-space: nowrap; }
+    .headline-ticker { flex: 1; height: 20px; overflow: hidden; position: relative; }
+    .headline-ticker-inner { display: flex; flex-direction: column; animation: ticker 9s linear infinite; }
+    .headline-ticker span { height: 20px; line-height: 20px; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @keyframes ticker { 0% { transform: translateY(0); } 20% { transform: translateY(0); } 33% { transform: translateY(-20px); } 53% { transform: translateY(-20px); } 66% { transform: translateY(-40px); } 86% { transform: translateY(-40px); } 100% { transform: translateY(-60px); } }
+    .headline-more { color: #999; font-size: 18px; }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .sec-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .sec-more { font-size: 13px; color: #999; }
+    .countdown { font-size: 12px; color: var(--primary); background: var(--primary-light); padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+
+    .flash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .flash-card { background: #fff; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
+    .flash-card img { width: 100%; height: 80px; object-fit: cover; display: block; }
+    .flash-body { padding: 8px; }
+    .flash-title { font-size: 12px; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .flash-price { color: var(--primary); font-size: 14px; font-weight: 700; }
+    .flash-price small { font-size: 11px; }
+    .flash-origin { font-size: 11px; color: #999; text-decoration: line-through; }
+
+    .hot-list { display: flex; flex-direction: column; gap: 12px; }
+    .hot-item { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .hot-rank { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .hot-rank.rank-1 { background: #FF4D4F; }
+    .hot-rank.rank-2 { background: #FF7A45; }
+    .hot-rank.rank-3 { background: #FFA940; }
+    .hot-item img { width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
+    .hot-info { flex: 1; min-width: 0; }
+    .hot-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hot-sold { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+    .hot-price { font-size: 15px; color: var(--primary); font-weight: 700; }
+
+    .merchant-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .merchant-scroll::-webkit-scrollbar { display: none; }
+    .merchant-card { flex-shrink: 0; width: 110px; background: var(--bg); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; }
+    .merchant-logo { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
+    .merchant-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .merchant-tag { font-size: 11px; color: var(--primary); background: #fff; border-radius: 8px; padding: 2px 6px; display: inline-block; }
+
+    .load-more { text-align: center; padding: 14px; font-size: 13px; color: #999; cursor: pointer; }
+
+    /* Utility */
+    .flex { display: flex; }
+    .flex-between { justify-content: space-between; }
+    .items-center { align-items: center; }
+    .gap-8 { gap: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .text-sm { font-size: 13px; }
+    .text-gray { color: var(--text-light); }
+    .font-bold { font-weight: 700; }
+    .hidden { display: none !important; }
+
+    /* 商家详情页 */
+    .merchant-page { background: var(--bg); min-height: 100%; }
+    .merchant-header { position: sticky; top: 0; z-index: 100; background: var(--primary); color: white; padding: 12px 16px; }
+    .merchant-header-row { display: flex; align-items: center; gap: 12px; }
+    .merchant-back { font-size: 28px; line-height: 1; cursor: pointer; padding-right: 4px; }
+    .merchant-search { flex: 1; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.95); border-radius: 18px; padding: 7px 12px; }
+    .merchant-search svg { width: 16px; height: 16px; color: #999; flex-shrink: 0; }
+    .merchant-search input { border: none; outline: none; flex: 1; font-size: 13px; color: var(--text); background: transparent; }
+    .merchant-actions { display: flex; align-items: center; gap: 12px; font-size: 16px; }
+    .merchant-hero { position: relative; height: 170px; overflow: hidden; }
+    .merchant-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .merchant-hero-mask { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.45) 100%); }
+    .merchant-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 14px 16px; display: flex; align-items: flex-end; gap: 12px; color: white; }
+    .merchant-logo-big { width: 56px; height: 56px; border-radius: 12px; background: #fff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+    .merchant-info-main { flex: 1; min-width: 0; }
+    .merchant-name-big { font-size: 18px; font-weight: 700; margin-bottom: 4px; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+    .merchant-stats { font-size: 12px; opacity: .92; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+    .merchant-follow { flex-shrink: 0; background: var(--primary); color: #fff; border: none; border-radius: 16px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+    .merchant-follow.followed { background: #fff; color: var(--text); }
+    .merchant-tabs { display: flex; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 56px; z-index: 90; }
+    .merchant-tab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--text); position: relative; cursor: pointer; }
+    .merchant-tab.active { color: var(--primary); font-weight: 700; }
+    .merchant-tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 28px; height: 3px; background: var(--primary); border-radius: 2px; }
+    .merchant-body { padding: 12px 0 80px; }
+    .merchant-panel { display: none; }
+    .merchant-panel.active { display: block; }
+    .merchant-filter { display: flex; align-items: center; gap: 24px; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .merchant-filter-item { font-size: 13px; color: var(--text-light); cursor: pointer; position: relative; }
+    .merchant-filter-item.active { color: var(--primary); font-weight: 700; }
+    .merchant-filter-item.active::after { content: ''; position: absolute; bottom: -10px; left: 0; right: 0; height: 2px; background: var(--primary); border-radius: 1px; }
+    .merchant-empty { text-align: center; padding: 60px 20px; color: var(--text-light); font-size: 14px; }
+    .coupon-item { display: flex; align-items: center; gap: 12px; padding: 14px 12px; border: 1px dashed #F8B4B4; border-radius: var(--radius-sm); background: #FFF7F7; margin-bottom: 10px; cursor: pointer; }
+
+    /* 公益报名页 */
+    .signup-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .form-item { margin-bottom: 16px; }
+    .form-item label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    .form-item .form-input, .form-item .form-textarea { width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="app-frame">
+    <div class="status-bar"><span class="time">9:41</span><div class="notch"></div><div class="icons">📶 WiFi 🔋</div></div>
+    <div class="home-bar"></div>
+    <!-- Loading -->
+    <div id="loading" class="page active no-pb">
+      <div class="loading-content">
+        <img src="logo.png" alt="向北小院" class="loading-logo">
+        <div class="loading-slogan">老乡共建 · 温暖向北</div>
+      </div>
+      <div class="loading-bottom">
+        <div class="loading-bar"><span></span></div>
+        <div class="loading-tips">雪落小院，老乡回家…</div>
+      </div>
+    </div>
+
+    <!-- Home -->
+    <div id="home" class="page">
+      <div class="header home-header">
+        <div class="header-row">
+          <div class="location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>深圳</span>
+          </div>
+          <div style="font-size:15px;font-weight:700;">向北小院</div>
+          <div class="header-right"></div>
+        </div>
+        <div class="search-box" onclick="showToast('搜索功能开发中')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          搜门店、帖子、特产、老乡…
+        </div>
+      </div>
+
+      <div class="banner">
+        <div class="banner-slide active"><img src="banner2.png" alt="哈尔滨中央大街"><span class="banner-cap">哈尔滨 · 中央大街<small>冰城雪景 · 欧陆风情</small></span></div>
+        <div class="banner-slide"><img src="banner1.png" alt="中国雪乡"><span class="banner-cap">中国雪乡<small>雪蘑菇 · 红灯笼 · 暖乡情</small></span></div>
+        <div class="banner-slide"><img src="banner3.png" alt="长白山天池"><span class="banner-cap">长白山天池<small>林海雪原 · 纯净风光</small></span></div>
+        <div class="banner-slide"><img src="banner4.png" alt="漠河北极村"><span class="banner-cap">漠河北极村<small>找北之旅 · 极光星空</small></span></div>
+        <div class="banner-dots">
+          <span class="banner-dot active"></span>
+          <span class="banner-dot"></span>
+          <span class="banner-dot"></span>
+          <span class="banner-dot"></span>
+        </div>
+      </div>
+
+      <div class="module-grid">
+        <div class="module-item" onclick="go('dining')">
+          <div class="module-icon" style="background:#FFF0F2;">🍲</div>
+          <div class="module-name">餐饮预订</div>
+        </div>
+        <div class="module-item" onclick="go('community')">
+          <div class="module-icon" style="background:#F0F9FF;">💬</div>
+          <div class="module-name">老乡社群</div>
+        </div>
+        <div class="module-item" onclick="go('mall')">
+          <div class="module-icon" style="background:#FFF7ED;">🛍️</div>
+          <div class="module-name">东北商城</div>
+        </div>
+        <div class="module-item" onclick="go('welfare')">
+          <div class="module-icon" style="background:#FDF4FF;">❤️</div>
+          <div class="module-name">公益活动</div>
+        </div>
+        <div class="module-item" onclick="go('resource')">
+          <div class="module-icon" style="background:#ECFDF5;">🤝</div>
+          <div class="module-name">资源对接</div>
+        </div>
+        <div class="module-item" onclick="go('invest')">
+          <div class="module-icon" style="background:#EFF6FF;">💰</div>
+          <div class="module-name">投资对接</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">附近门店<span class="more" onclick="go('dining')">更多 ›</span></div>
+        <div class="card store-card" onclick="go('dining-detail')">
+          <img class="store-img" src="store-nanshan.png" alt="向北小院南山店">
+          <div class="store-info">
+            <div class="store-name">向北小院 · 南山店</div>
+            <div class="store-meta">🚗 1.2km · ⭐ 4.9 · 月售 328</div>
+            <div class="store-tags"><span class="tag">锅包肉</span><span class="tag">铁锅炖</span><span class="tag">可订包厢</span></div>
+          </div>
+        </div>
+        <div class="card store-card" onclick="go('dining-detail')">
+          <img class="store-img" src="store-futian.png" alt="向北小院福田店">
+          <div class="store-info">
+            <div class="store-name">向北小院 · 福田店</div>
+            <div class="store-meta">🚗 3.8km · ⭐ 4.8 · 月售 256</div>
+            <div class="store-tags"><span class="tag">杀猪菜</span><span class="tag">冻梨</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" style="padding-top:0;">
+        <div class="section-title">社群热帖<span class="more" onclick="go('community')">更多 ›</span></div>
+        <div class="card post-card" onclick="go('community-detail')">
+          <div class="post-header">
+            <div class="avatar">李</div>
+            <div><div class="post-author">李大嘴</div><div class="post-time">2小时前 · 聚会召集</div></div>
+          </div>
+          <div class="post-title">周末南山店铁锅炖，还差4人，老乡们一起聚聚！</div>
+          <div class="post-content">刚来深圳半年，想找几个东北老乡一起热闹热闹，周六晚上南山店铁锅炖，AA制，能喝的老乡优先报名。</div>
+          <div class="post-footer"><span>👁 128</span><span>💬 23</span><span>👍 45</span></div>
+        </div>
+      </div>
+
+      <div class="section" style="padding-top:0;">
+        <div class="section-title">公益活动<span class="more" onclick="go('welfare')">更多 ›</span></div>
+        <div class="card" style="display:flex;gap:12px;align-items:center;" onclick="go('welfare-detail')">
+          <img src="welfare-cover-mianyi.png" alt="暖冬行动" style="width:70px;height:70px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;">
+          <div style="flex:1;">
+            <div style="font-weight:700;margin-bottom:4px;">暖冬行动 · 为老乡送棉衣</div>
+            <div style="font-size:12px;color:var(--text-light);">12月15日 · 龙华文化广场</div>
+            <div style="margin-top:6px;"><span class="tag">报名中</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dining -->
+    <div id="dining" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">餐饮门店</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">离我最近</div>
+        <div class="tab">评分最高</div>
+        <div class="tab">人气最旺</div>
+        <div class="tab">可订包厢</div>
+      </div>
+      <div class="section" style="padding-top:0;">
+        <div class="card store-card" onclick="go('dining-detail')">
+          <img class="store-img" src="store-nanshan.png" alt="向北小院南山店">
+          <div class="store-info">
+            <div class="store-name">向北小院 · 南山店</div>
+            <div class="store-meta">🚗 1.2km · ⭐ 4.9 · 月售 328</div>
+            <div class="store-tags"><span class="tag">锅包肉</span><span class="tag">铁锅炖</span></div>
+          </div>
+        </div>
+        <div class="card store-card" onclick="go('dining-detail')">
+          <img class="store-img" src="store-futian.png" alt="向北小院福田店">
+          <div class="store-info">
+            <div class="store-name">向北小院 · 福田店</div>
+            <div class="store-meta">🚗 3.8km · ⭐ 4.8 · 月售 256</div>
+            <div class="store-tags"><span class="tag">杀猪菜</span><span class="tag">冻梨</span></div>
+          </div>
+        </div>
+        <div class="card store-card" onclick="go('dining-detail')">
+          <img class="store-img" src="store-baoan.png" alt="向北小院宝安店">
+          <div class="store-info">
+            <div class="store-name">向北小院 · 宝安店</div>
+            <div class="store-meta">🚗 6.5km · ⭐ 4.7 · 月售 189</div>
+            <div class="store-tags"><span class="tag">小鸡炖蘑菇</span><span class="tag">酸菜饺子</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dining Detail -->
+    <div id="dining-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">门店详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="detail-hero"><img src="dining-banner.png" alt="向北小院 · 南山店"></div>
+      <div class="detail-body">
+        <div class="detail-title">向北小院 · 南山店</div>
+        <div class="detail-meta">⭐ 4.9 · 月售 328 · 🚗 深圳市南山区科技园xx路12号</div>
+        <div class="detail-section">
+          <h3>营业时间</h3>
+          <p>午市 11:00-14:00 · 晚市 17:00-22:00</p>
+          <div class="store-contact-row">
+            <a class="phone-block" href="tel:0755-88886666">
+              <span class="icon">📞</span>
+              <span>0755-8888 6666</span>
+            </a>
+            <a class="navigate-btn" href="https://map.baidu.com/search/%E6%B7%B1%E5%9C%B3%E5%B8%82%E5%8D%97%E5%B1%B1%E5%8C%BA%E7%A7%91%E6%8A%80%E5%9B%ADxx%E8%B7%AF12%E5%8F%B7" target="_blank">
+              <span class="icon">🧭</span>
+              一键导航
+            </a>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h3>招牌菜品</h3>
+          <div class="product-grid" style="margin-top:10px;">
+            <div class="product-card" onclick="showToast('已加入预点菜购物车')">
+              <div class="product-img"><img src="dish-guobaorou.png" alt="老式锅包肉"></div>
+              <div class="product-body"><div class="product-title">老式锅包肉</div><div class="product-price"><small>¥</small>58</div></div>
+            </div>
+            <div class="product-card" onclick="showToast('已加入预点菜购物车')">
+              <div class="product-img"><img src="dish-dae.png" alt="铁锅炖大鹅"></div>
+              <div class="product-body"><div class="product-title">铁锅炖大鹅</div><div class="product-price"><small>¥</small>168</div></div>
+            </div>
+            <div class="product-card" onclick="showToast('已加入预点菜购物车')">
+              <div class="product-img"><img src="dish-jiaozi.png" alt="酸菜猪肉饺子"></div>
+              <div class="product-body"><div class="product-title">酸菜猪肉饺子</div><div class="product-price"><small>¥</small>32</div></div>
+            </div>
+            <div class="product-card" onclick="showToast('已加入预点菜购物车')">
+              <div class="product-img"><img src="dish-dongli.png" alt="东北冻梨"></div>
+              <div class="product-body"><div class="product-title">东北冻梨</div><div class="product-price"><small>¥</small>12</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h3>包厢预订</h3>
+          <div class="list-item" onclick="go('book-room')">
+            <div>
+              <div class="list-item-title">雪乡厅 · 8人桌</div>
+              <div class="list-item-desc">午市/晚市可订 · 低消 ¥300</div>
+            </div>
+            <span class="status-badge">可订</span>
+          </div>
+          <div class="list-item" onclick="go('book-room')">
+            <div>
+              <div class="list-item-title">北大荒厅 · 12人桌</div>
+              <div class="list-item-desc">晚市可订 · 低消 ¥500</div>
+            </div>
+            <span class="status-badge">可订</span>
+          </div>
+          <div class="list-item">
+            <div>
+              <div class="list-item-title">长白山厅 · 6人桌</div>
+              <div class="list-item-desc">维护中</div>
+            </div>
+            <span class="status-badge gray">维护中</span>
+          </div>
+        </div>
+      </div>
+      <div class="fixed-bottom-btn" style="display:flex;gap:12px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="go('pre-order')">预点菜</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="go('book-room')">订包厢</button>
+      </div>
+    </div>
+
+    <!-- Community -->
+    <div id="community" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">老乡社群</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">全部</div>
+        <div class="tab">老乡互助</div>
+        <div class="tab">聚会召集</div>
+        <div class="tab">二手闲置</div>
+        <div class="tab">寻人寻物</div>
+        <div class="tab">创业交流</div>
+        <div class="tab">情感乡音</div>
+      </div>
+      <div class="community-banner">
+        <img src="community-banner.png" alt="老乡社群">
+      </div>
+      <div class="community-grid">
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c1.png" style="height:150px;object-fit:cover;" alt="铁锅炖聚餐">
+          <div class="post-body">
+            <div class="post-title">周末南山店铁锅炖，还差4人，老乡们一起聚聚！</div>
+            <div class="post-content">刚来深圳半年，想找几个东北老乡一起热闹热闹，周六晚南山店铁锅炖，AA制。</div>
+            <div class="post-meta">
+              <div class="avatar">李</div>
+              <span>李大嘴</span>
+              <span class="post-like">❤️ 45</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c2.png" style="height:180px;object-fit:cover;" alt="新鲜糯玉米">
+          <div class="post-body">
+            <div class="price-tag">¥58</div>
+            <div class="post-title">自家种的新鲜糯玉米，10根装，老乡尝鲜价</div>
+            <div class="post-meta">
+              <div class="avatar" style="background:#E0F2FE;color:#0369A1;">赵</div>
+              <span>赵大姐</span>
+              <span class="post-like">🤍 28</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c3.png" style="height:120px;object-fit:cover;" alt="二手电暖器">
+          <div class="post-body">
+            <div class="post-title">出一张9成新电暖器，老乡优先</div>
+            <div class="post-content">要回老家了，电暖器带不走，50元自提，地址宝安。</div>
+            <div class="post-meta">
+              <div class="avatar" style="background:#E0F2FE;color:#0369A1;">王</div>
+              <span>王小妹</span>
+              <span class="post-like">❤️ 12</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c4.png" style="height:160px;object-fit:cover;" alt="东北烧烤">
+          <div class="post-body">
+            <div class="post-title">找会做东北烧烤的师傅，一起搞个宵夜档</div>
+            <div class="post-content">本人在龙岗有个小店，想增加东北烧烤，寻靠谱师傅合作，手艺好可技术入股。</div>
+            <div class="post-meta">
+              <div class="avatar" style="background:#F3E8FF;color:#7E22CE;">张</div>
+              <span>张老板</span>
+              <span class="post-like">❤️ 67</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c5.png" style="height:150px;object-fit:cover;" alt="雪乡拼车">
+          <div class="post-body">
+            <div class="post-title">过年回哈尔滨，有老乡一起拼车吗？</div>
+            <div class="post-content">2月3号深圳出发回哈尔滨，目前2人，还可拼2位老乡。</div>
+            <div class="post-meta">
+              <div class="avatar" style="background:#DCFCE7;color:#15803D;">刘</div>
+              <span>刘哥</span>
+              <span class="post-like">🤍 34</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-card-v2" onclick="go('community-detail')">
+          <img class="post-img" src="post-c6.png" style="height:130px;object-fit:cover;" alt="东北秧歌">
+          <div class="post-body">
+            <div class="post-title">征集东北秧歌队队员，春节社区汇演</div>
+            <div class="post-content">会扭秧歌的老乡看过来，每周六下午排练，有无基础均可。</div>
+            <div class="post-meta">
+              <div class="avatar" style="background:#FFEDD5;color:#C2410C;">孙</div>
+              <span>孙姐</span>
+              <span class="post-like">❤️ 21</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community Detail -->
+    <div id="community-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">帖子详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="post-header">
+            <div class="avatar">李</div>
+            <div><div class="post-author">李大嘴</div><div class="post-time">2小时前 · 聚会召集</div></div>
+          </div>
+          <div class="post-title">周末南山店铁锅炖，还差4人，老乡们一起聚聚！</div>
+          <div class="post-media">
+            <div class="media-img-grid">
+              <img src="detail-1.png" alt="铁锅炖大锅" onclick="showToast('图片预览开发中')">
+              <img src="detail-2.png" alt="老乡聚餐" onclick="showToast('图片预览开发中')">
+              <img src="detail-3.png" alt="一桌东北菜" onclick="showToast('图片预览开发中')">
+            </div>
+            <div class="media-video-row">
+              <div class="video-tile" onclick="showToast('视频播放功能开发中')">
+                <img src="post-c1.png" alt="聚餐视频">
+                <div class="video-play">▶</div>
+                <span class="video-dur">0:32</span>
+              </div>
+              <div class="video-tile" onclick="showToast('视频播放功能开发中')">
+                <img src="detail-video.png" alt="现场视频">
+                <div class="video-play">▶</div>
+                <span class="video-dur">1:05</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:14px;line-height:1.8;color:var(--text);margin-top:10px;">
+            刚来深圳半年，想找几个东北老乡一起热闹热闹。<br><br>
+            时间：本周六晚 18:00<br>
+            地点：向北小院南山店 北大荒厅<br>
+            人数：目前已有4人，还差4人<br>
+            费用：AA制，人均约80-100元<br><br>
+            能喝的老乡优先报名，咱们不醉不归！
+          </div>
+          <div class="post-footer" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+            <span onclick="toggleLike(this)">👍 45</span>
+            <span>💬 23</span>
+            <span>⭐ 收藏</span>
+          </div>
+        </div>
+        <div class="section-title" style="margin-top:8px;">评论</div>
+        <div class="card">
+          <div class="post-header">
+            <div class="avatar" style="background:#E0F2FE;color:#0369A1;font-size:12px;">赵四</div>
+            <div><div class="post-author">赵四</div><div class="post-time">1小时前</div></div>
+          </div>
+          <div style="font-size:14px;color:var(--text);margin-top:6px;">报名！我带瓶老村长。</div>
+        </div>
+        <div class="card">
+          <div class="post-header">
+            <div class="avatar" style="background:#F3E8FF;color:#7E22CE;font-size:12px;">刘能</div>
+            <div><div class="post-author">刘能</div><div class="post-time">30分钟前</div></div>
+          </div>
+          <div style="font-size:14px;color:var(--text);margin-top:6px;">算我一个，最爱铁锅炖。</div>
+        </div>
+      </div>
+      <div class="fixed-bottom-btn" style="display:flex;gap:12px;">
+        <input class="form-input" placeholder="写评论…" style="flex:1;" onclick="showToast('评论功能开发中')">
+        <button class="btn btn-primary" onclick="showToast('评论已发送')">发送</button>
+      </div>
+    </div>
+
+    <!-- Mall -->
+    <div id="mall" class="page">
+      <div class="mall-top">
+        <div class="mall-top-row">
+          <div class="mall-search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="请输入关键字" onclick="showToast('搜索功能开发中')">
+          </div>
+          <div class="mall-actions">
+            <span onclick="showToast('更多')">•••</span>
+            <span onclick="showToast('扫一扫')">◎</span>
+            <div class="mall-cart-icon" onclick="go('mall-cart')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <span class="cart-badge" id="mallCartBadge">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="mall-tabs">
+          <div class="mall-tab active">首页</div>
+          <div class="mall-tab">粮油干货</div>
+          <div class="mall-tab">山珍特产</div>
+          <div class="mall-tab">零食饮品</div>
+          <div class="mall-tab">家乡味道</div>
+          <div class="mall-tab">老乡店铺</div>
+          <div class="mall-tab category-more"><span>☰</span>分类</div>
+        </div>
+      </div>
+
+      <div class="mall-content">
+        <!-- Banner 轮播 -->
+        <div class="banner mall-banner">
+          <div class="banner-slide active"><img src="mall-banner1.png" alt="东北特产"><span class="banner-cap">东北特产直发<small>原产地 · 老乡严选</small></span></div>
+          <div class="banner-slide"><img src="mall-banner2.png" alt="山珍干货"><span class="banner-cap">山珍干货专场<small>长白山 · 林海参茸</small></span></div>
+          <div class="banner-dots"><span class="banner-dot active"></span><span class="banner-dot"></span></div>
+        </div>
+
+        <!-- 金刚区 -->
+        <div class="mall-card kingkong-card">
+          <div class="kingkong-grid">
+            <div class="king-item" onclick="showToast('积分商城')"><div class="king-icon" style="background:linear-gradient(135deg,#C41E3A,#A01830);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13"/><path d="M19 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2"/><path d="M8.5 4l7 4"/><path d="M15.5 4l-7 4"/></svg></div><span>积分商城</span></div>
+            <div class="king-item" onclick="showToast('积分签到')"><div class="king-icon" style="background:linear-gradient(135deg,#2E8B57,#1F6B43);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M9 15l2 2 4-4"/></svg></div><span>积分签到</span></div>
+            <div class="king-item" onclick="showToast('帮助中心')"><div class="king-icon" style="background:linear-gradient(135deg,#1E90FF,#0F6FCF);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><span>帮助中心</span></div>
+            <div class="king-item" onclick="showToast('商城资讯')"><div class="king-icon" style="background:linear-gradient(135deg,#20B2AA,#158C86);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg></div><span>商城资讯</span></div>
+            <div class="king-item" onclick="showToast('我的收藏')"><div class="king-icon" style="background:linear-gradient(135deg,#FF69B4,#D44A91);"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><span>我的收藏</span></div>
+            <div class="king-item" onclick="showToast('领券中心')"><div class="king-icon" style="background:linear-gradient(135deg,#4169E1,#2E4FBF);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M12 11v6"/><path d="M9 14h6"/></svg></div><span>领券中心</span></div>
+            <div class="king-item" onclick="showToast('店铺街')"><div class="king-icon" style="background:linear-gradient(135deg,#D4A574,#B8864B);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-5 8 5v14"/><path d="M9 10h6v11H9z"/><path d="M12 10V7"/></svg></div><span>店铺街</span></div>
+            <div class="king-item" onclick="showToast('新品推荐')"><div class="king-icon" style="background:linear-gradient(135deg,#9370DB,#6A42C9);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg></div><span>新品推荐</span></div>
+            <div class="king-item" onclick="showToast('热销榜单')"><div class="king-icon" style="background:linear-gradient(135deg,#FF4500,#CC3700);"><svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M12 2c0 0-7 4-7 11 0 3.86 3.14 7 7 7s7-3.14 7-7c0-7-7-11-7-11zm0 16c-2.76 0-5-2.24-5-5 0-3.36 2.92-5.86 5-7.12 2.08 1.26 5 3.76 5 7.12 0 2.76-2.24 5-5 5z"/><path d="M12 10c-1.1 0-2 .9-2 2 0 1.5 2 3 2 3s2-1.5 2-3c0-1.1-.9-2-2-2z"/></svg></div><span>热销榜单</span></div>
+            <div class="king-item" onclick="showToast('限时秒杀')"><div class="king-icon" style="background:linear-gradient(135deg,#DC143C,#A0102D);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="9"/><path d="M12 7v6l3 3"/><path d="M12 2v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 4.22l-1.42 1.42"/></svg></div><span>限时秒杀</span></div>
+          </div>
+        </div>
+
+        <!-- 商城头条 -->
+        <div class="mall-card headline-card">
+          <span class="headline-label">商城头条</span>
+          <div class="headline-ticker">
+            <div class="headline-ticker-inner">
+              <span>东北五常大米新米上市，老乡专享88折</span>
+              <span>雪乡味道零食店入驻商城，限时满减</span>
+              <span>长白山野生榛蘑补货，原产地直发</span>
+              <span>东北五常大米新米上市，老乡专享88折</span>
+            </div>
+          </div>
+          <span class="headline-more" onclick="showToast('更多头条')">›</span>
+        </div>
+
+        <!-- 超值秒杀 -->
+        <div class="mall-card">
+          <div class="section-header">
+            <div class="sec-title">超值秒杀</div>
+            <div class="countdown" id="mallCountdown">距结束 02:15:38</div>
+          </div>
+          <div class="flash-grid">
+            <div class="flash-card" onclick="go('mall-product')">
+              <img src="prod-hongchang.png" alt="哈尔滨红肠">
+              <div class="flash-body"><div class="flash-title">哈尔滨红肠</div><div class="flash-price"><small>¥</small>29.9</div><div class="flash-origin">¥45</div></div>
+            </div>
+            <div class="flash-card" onclick="go('mall-product')">
+              <img src="prod-niandoubao.png" alt="东北粘豆包">
+              <div class="flash-body"><div class="flash-title">东北粘豆包</div><div class="flash-price"><small>¥</small>19.9</div><div class="flash-origin">¥32</div></div>
+            </div>
+            <div class="flash-card" onclick="go('mall-product')">
+              <img src="prod-gewasi.png" alt="秋林格瓦斯">
+              <div class="flash-body"><div class="flash-title">秋林格瓦斯</div><div class="flash-price"><small>¥</small>9.9</div><div class="flash-origin">¥16</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 热销榜单 -->
+        <div class="mall-card">
+          <div class="section-header">
+            <div class="sec-title">热销榜单</div>
+            <span class="sec-more" onclick="showToast('查看更多')">更多 ›</span>
+          </div>
+          <div class="hot-list">
+            <div class="hot-item" onclick="go('mall-product')">
+              <div class="hot-rank rank-1">1</div>
+              <img src="prod-dami.png" alt="五常大米">
+              <div class="hot-info"><div class="hot-title">东北五常大米 稻花香2号 5kg</div><div class="hot-sold">已售 1.2万</div><div class="hot-price">¥68</div></div>
+            </div>
+            <div class="hot-item" onclick="go('mall-product')">
+              <div class="hot-rank rank-2">2</div>
+              <img src="prod-zhenmo.png" alt="野生榛蘑">
+              <div class="hot-info"><div class="hot-title">长白山野生榛蘑 250g</div><div class="hot-sold">已售 8,562</div><div class="hot-price">¥45</div></div>
+            </div>
+            <div class="hot-item" onclick="go('mall-product')">
+              <div class="hot-rank rank-3">3</div>
+              <img src="prod-pingguoli.png" alt="延边苹果梨">
+              <div class="hot-info"><div class="hot-title">延边苹果梨 5斤装</div><div class="hot-sold">已售 6,321</div><div class="hot-price">¥39</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商家推荐 -->
+        <div class="mall-card">
+          <div class="section-header">
+            <div class="sec-title">商家推荐</div>
+            <span class="sec-more" onclick="showToast('更多商家')">更多 ›</span>
+          </div>
+          <div class="merchant-scroll">
+            <div class="merchant-card" onclick="goMerchantDetail('laowang')">
+              <div class="merchant-logo" style="background:#FFE4E8;">🏪</div>
+              <div class="merchant-name">老王东北特产铺</div>
+              <div class="merchant-tag">月销500+</div>
+            </div>
+            <div class="merchant-card" onclick="goMerchantDetail('xuexiang')">
+              <div class="merchant-logo" style="background:#E0F2FE;">🍿</div>
+              <div class="merchant-name">雪乡味道零食店</div>
+              <div class="merchant-tag">月销300+</div>
+            </div>
+            <div class="merchant-card" onclick="goMerchantDetail('dami')">
+              <div class="merchant-logo" style="background:#F3E8FF;">🌾</div>
+              <div class="merchant-name">五常大米直营店</div>
+              <div class="merchant-tag">月销800+</div>
+            </div>
+            <div class="merchant-card" onclick="goMerchantDetail('shanhuo')">
+              <div class="merchant-logo" style="background:#E6FFFA;">🍄</div>
+              <div class="merchant-name">长白山林海山货</div>
+              <div class="merchant-tag">月销200+</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品推荐 -->
+        <div class="mall-card">
+          <div class="section-header"><div class="sec-title">商品推荐</div></div>
+          <div class="product-grid" id="mallProductGrid">
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-dami.png" alt="五常大米"></div>
+              <div class="product-body"><div class="product-title">东北五常大米 稻花香2号 5kg</div><div class="product-price"><small>¥</small>68</div><div class="product-sold">已售 1.2万</div></div>
+            </div>
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-zhenmo.png" alt="野生榛蘑"></div>
+              <div class="product-body"><div class="product-title">长白山野生榛蘑 250g</div><div class="product-price"><small>¥</small>45</div><div class="product-sold">已售 8,562</div></div>
+            </div>
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-dajiang.png" alt="东北大酱"></div>
+              <div class="product-body"><div class="product-title">东北农家大酱 手工自制</div><div class="product-price"><small>¥</small>28</div><div class="product-sold">已售 5,231</div></div>
+            </div>
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-pingguoli.png" alt="延边苹果梨"></div>
+              <div class="product-body"><div class="product-title">延边苹果梨 5斤装</div><div class="product-price"><small>¥</small>39</div><div class="product-sold">已售 6,321</div></div>
+            </div>
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-gewasi.png" alt="格瓦斯"></div>
+              <div class="product-body"><div class="product-title">秋林格瓦斯 俄罗斯风味</div><div class="product-price"><small>¥</small>36</div><div class="product-sold">已售 3,102</div></div>
+            </div>
+            <div class="product-card" onclick="go('mall-product')">
+              <div class="product-img"><img src="prod-heimuer.png" alt="黑木耳"></div>
+              <div class="product-body"><div class="product-title">东北黑木耳 秋耳干货</div><div class="product-price"><small>¥</small>32</div><div class="product-sold">已售 4,876</div></div>
+            </div>
+          </div>
+          <div class="load-more" id="mallLoadMore" onclick="loadMoreMall()">点击加载更多</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mall Product -->
+    <div id="mall-product" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">商品详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="detail-hero"><img src="prod-dami.png" alt="五常大米"></div>
+      <div class="detail-body">
+        <div class="detail-title">东北五常大米 稻花香2号 5kg</div>
+        <div class="detail-meta" style="font-size:18px;color:var(--primary);font-weight:700;">¥68 <small style="color:var(--text-light);font-size:13px;font-weight:400;">原产地直发 · 老乡严选</small></div>
+        <div class="detail-section">
+          <h3>商品详情</h3>
+          <p>产自黑龙江五常核心产区，执行GB/T 19266标准，米粒修长、香气浓郁，蒸出来的米饭油亮软糯。平台自营，品质保障。</p>
+        </div>
+        <div class="detail-section">
+          <h3>店铺信息</h3>
+          <p>向北小院 · 平台自营店<br>月销 1.2万 · 好评率 99%</p>
+        </div>
+      </div>
+      <div class="fixed-bottom-btn" style="display:flex;gap:12px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="addToCart('东北五常大米 稻花香2号 5kg', 68, 'prod-dami.png')">加入购物车</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="buyNow('东北五常大米 稻花香2号 5kg', 68, 'prod-dami.png')">立即购买</button>
+      </div>
+    </div>
+
+    <!-- 购物车 -->
+    <div id="mall-cart" class="page cart-page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">购物车</div>
+          <div class="header-right" style="font-size:13px;color:var(--primary);" onclick="showToast('编辑功能开发中')">编辑</div>
+        </div>
+      </div>
+      <div id="cartList" class="cart-list"></div>
+      <div class="cart-bar">
+        <div class="cart-check" id="cartAllCheck" onclick="toggleAll(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg>
+        </div>
+        <span class="cart-bar-label">全选</span>
+        <div class="cart-total">合计：<b id="cartTotal">¥0</b></div>
+        <button class="cart-settle" onclick="goConfirm()">去结算</button>
+      </div>
+    </div>
+
+    <!-- 确认订单 -->
+    <div id="mall-confirm" class="page confirm-page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">确认订单</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="addr-card" onclick="showToast('地址管理开发中')">
+        <div class="addr-pin">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="addr-main">
+          <div class="addr-name">张大彪 <span style="font-size:13px;font-weight:400;color:var(--text-light);margin-left:6px;">138****6677</span></div>
+          <div class="addr-detail">广东省深圳市南山区科技园南区 向北小院老乡驿站 3 栋 502</div>
+        </div>
+        <div class="addr-arrow">›</div>
+      </div>
+      <div id="confirmGoods" class="confirm-goods"></div>
+      <div class="confirm-row">
+        <span class="label">配送方式</span>
+        <span class="val">向北小院同城配送 ›</span>
+      </div>
+      <div class="confirm-row">
+        <span class="label">优惠券</span>
+        <span class="val primary">满99减10 ›</span>
+      </div>
+      <div class="confirm-note">
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:6px;">订单备注</div>
+        <textarea placeholder="如有特殊要求请在此说明，如：大米要真空包装"></textarea>
+      </div>
+      <div class="pay-bar">
+        <div class="pay-total">实付款：<b id="confirmTotal">¥0</b></div>
+        <button class="pay-btn" onclick="submitOrder()">提交订单</button>
+      </div>
+    </div>
+
+    <!-- Merchant Detail -->
+    <div id="merchant-detail" class="page merchant-page">
+      <div class="merchant-header">
+        <div class="merchant-header-row">
+          <div class="merchant-back" onclick="back()">‹</div>
+          <div class="merchant-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="搜索店内商品" readonly onclick="showToast('搜索功能开发中')">
+          </div>
+          <div class="merchant-actions">
+            <span onclick="showToast('更多')">•••</span>
+          </div>
+        </div>
+      </div>
+      <div class="merchant-hero" id="merchantHero">
+        <img src="merchant-banner-laowang.png" alt="店铺banner">
+        <div class="merchant-hero-mask"></div>
+        <div class="merchant-info">
+          <div class="merchant-logo-big" id="merchantLogoBig">王</div>
+          <div class="merchant-info-main">
+            <div class="merchant-name-big" id="merchantNameBig">老王东北特产铺</div>
+            <div class="merchant-stats" id="merchantStats">主营：山珍 · 干货 · 大米 · 月销500+</div>
+          </div>
+          <button class="merchant-follow" id="merchantFollow" onclick="toggleFollow(this)">+ 关注</button>
+        </div>
+      </div>
+      <div class="merchant-tabs" id="merchantTabs">
+        <div class="merchant-tab active" onclick="switchMerchantTab('featured', this)">精选</div>
+        <div class="merchant-tab" onclick="switchMerchantTab('products', this)">商品</div>
+        <div class="merchant-tab" onclick="switchMerchantTab('coupons', this)">领券</div>
+      </div>
+      <div class="merchant-body">
+        <div class="merchant-panel active" id="merchantFeatured">
+          <div class="mall-card">
+            <div class="section-header"><div class="sec-title">店铺推荐</div></div>
+            <div class="flash-grid" id="merchantRecGrid"></div>
+          </div>
+          <div class="mall-card">
+            <div class="section-header"><div class="sec-title">全部商品</div></div>
+            <div class="merchant-filter">
+              <span class="merchant-filter-item active" onclick="sortMerchant('default', this)">综合</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('new', this)">新品</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('price', this)">价格</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('sales', this)">销量</span>
+            </div>
+            <div class="product-grid" id="merchantProductGrid"></div>
+          </div>
+        </div>
+        <div class="merchant-panel" id="merchantProducts">
+          <div class="mall-card">
+            <div class="merchant-filter">
+              <span class="merchant-filter-item active" onclick="sortMerchant('default', this)">综合</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('new', this)">新品</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('price', this)">价格</span>
+              <span class="merchant-filter-item" onclick="sortMerchant('sales', this)">销量</span>
+            </div>
+            <div class="product-grid" id="merchantProductGrid2"></div>
+          </div>
+        </div>
+        <div class="merchant-panel" id="merchantCoupons">
+          <div class="mall-card">
+            <div class="section-header"><div class="sec-title">店铺优惠券</div></div>
+            <div id="merchantCouponList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welfare -->
+    <div id="welfare" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">公益活动</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="card welfare-card" onclick="goWelfareDetail('mianyi')">
+          <div class="welfare-cover">
+            <img src="welfare-cover-mianyi.png" alt="暖冬行动">
+            <span class="welfare-status open">报名中</span>
+          </div>
+          <div class="welfare-title">暖冬行动 · 为老乡送棉衣</div>
+          <div class="welfare-meta">📅 12月15日 · 📍 龙华文化广场</div>
+          <div class="welfare-footer">
+            <span class="tag">报名中</span>
+            <span style="font-size:12px;color:var(--text-light);">已有 86 人报名</span>
+          </div>
+        </div>
+        <div class="card welfare-card" onclick="goWelfareDetail('shuji')">
+          <div class="welfare-cover">
+            <img src="welfare-cover-shuji.png" alt="情系东北">
+            <span class="welfare-status open">报名中</span>
+          </div>
+          <div class="welfare-title">情系东北 · 为家乡小学捐书</div>
+          <div class="welfare-meta">📅 长期有效 · 📍 线上登记</div>
+          <div class="welfare-footer">
+            <span class="tag">报名中</span>
+            <span style="font-size:12px;color:var(--text-light);">已捐 320 本</span>
+          </div>
+        </div>
+        <div class="card welfare-card" onclick="goWelfareDetail('yizhen')">
+          <div class="welfare-cover">
+            <img src="welfare-cover-yizhen.png" alt="老乡义诊">
+            <span class="welfare-status ended">已结束</span>
+          </div>
+          <div class="welfare-title">关爱老乡 · 社区义诊行</div>
+          <div class="welfare-meta">📅 10月1日 · 📍 福田社区服务中心</div>
+          <div class="welfare-footer">
+            <span class="tag ended">已结束</span>
+            <span style="font-size:12px;color:var(--text-light);">累计服务 128 人次</span>
+          </div>
+        </div>
+        <div class="card welfare-card" onclick="goWelfareDetail('jiaozi')">
+          <div class="welfare-cover">
+            <img src="welfare-cover-jiaozi.png" alt="春节包饺子">
+            <span class="welfare-status ended">已结束</span>
+          </div>
+          <div class="welfare-title">浓情年味 · 老乡春节包饺子</div>
+          <div class="welfare-meta">📅 1月28日 · 📍 向北小院南山店</div>
+          <div class="welfare-footer">
+            <span class="tag ended">已结束</span>
+            <span style="font-size:12px;color:var(--text-light);">参与 56 人</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welfare Detail -->
+    <div id="welfare-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">活动详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="banner welfare-carousel" id="welfareCarousel">
+        <div class="banner-slide active"><img src="welfare-cover-mianyi.png" alt="活动图1"></div>
+        <div class="banner-slide"><img src="welfare-detail-mianyi-1.png" alt="活动图2"></div>
+        <div class="banner-slide"><img src="welfare-detail-mianyi-2.png" alt="活动图3"></div>
+        <div class="banner-dots"><span class="banner-dot active"></span><span class="banner-dot"></span><span class="banner-dot"></span></div>
+      </div>
+      <div class="detail-body" id="welfareDetailBody">
+        <div class="detail-title" id="welfareDetailTitle">暖冬行动 · 为老乡送棉衣</div>
+        <div class="detail-meta" id="welfareDetailMeta">📅 12月15日 09:00 · 📍 龙华文化广场 · 已有 86 人报名</div>
+        <div id="welfareDetailContent">
+          <div class="detail-section">
+            <h3>活动简介</h3>
+            <p>冬天来了，为在深困难老乡送去一份温暖。本次活动募集棉衣、棉被等御寒物资，欢迎老乡们报名参加志愿服务，也接受物资捐赠。</p>
+          </div>
+          <div class="detail-section">
+            <h3>报名须知</h3>
+            <p>点击下方「立即报名」按钮填写报名表单，提交后平台工作人员会在 3 个工作日内电话联系确认。现场需志愿者自备手套，物资捐赠可直接联系门店收货。</p>
+          </div>
+        </div>
+        <div id="welfareDetailGallery" style="display:none;"></div>
+      </div>
+      <button class="btn btn-primary btn-lg fixed-bottom-btn" id="welfareActionBtn" onclick="goWelfareSignup()">立即报名</button>
+    </div>
+
+    <!-- Welfare Signup -->
+    <div id="welfare-signup" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">提交报名资料</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="signup-title" id="signupActivityTitle">暖冬行动 · 为老乡送棉衣</div>
+          <div class="form-item">
+            <label>姓名 <span style="color:var(--primary);">*</span></label>
+            <input type="text" class="form-input" id="signupName" placeholder="请输入您的真实姓名">
+          </div>
+          <div class="form-item">
+            <label>电话 <span style="color:var(--primary);">*</span></label>
+            <input type="tel" class="form-input" id="signupPhone" maxlength="11" placeholder="请输入 11 位手机号">
+          </div>
+          <div class="form-item">
+            <label>所在地区 <span style="color:var(--primary);">*</span></label>
+            <input type="text" class="form-input" id="signupRegion" placeholder="如：广东省深圳市南山区">
+          </div>
+          <div class="form-item">
+            <label>备注</label>
+            <textarea class="form-textarea" id="signupNote" placeholder="可填写可参与的时间、特长或想捐赠的物资等信息（选填）"></textarea>
+          </div>
+          <div style="font-size:12px;color:var(--text-light);line-height:1.7;margin-top:4px;">提交后平台工作人员将在 3 个工作日内电话与您确认，请保持手机畅通。您的个人信息仅用于本次活动组织，平台将严格保密。</div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg fixed-bottom-btn" onclick="submitWelfareSignup()">提交报名</button>
+    </div>
+
+    <!-- Resource -->
+    <div id="resource" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">资源对接</div>
+          <div class="header-right" onclick="go('post-resource')">+</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">全部</div>
+        <div class="tab">房源</div>
+        <div class="tab">车位</div>
+        <div class="tab">车辆</div>
+        <div class="tab">二手</div>
+        <div class="tab">技能</div>
+        <div class="tab">招聘</div>
+      </div>
+      <div class="section" style="padding-top:0;">
+        <div class="card" onclick="go('resource-detail')">
+          <div class="flex flex-between items-center" style="margin-bottom:8px;">
+            <span class="tag" style="background:#DBEAFE;color:#1D4ED8;">供给</span>
+            <span style="font-size:12px;color:var(--text-light);">房源 · 2小时前</span>
+          </div>
+          <div style="font-weight:700;margin-bottom:6px;">宝安两室一厅次卧出租，限东北老乡</div>
+          <div style="font-size:13px;color:var(--text-light);line-height:1.5;">家电齐全，近地铁，月租1500，押一付一，希望室友是爱干净的老乡。</div>
+          <div style="margin-top:10px;font-size:13px;color:var(--text-light);">联系方式：138****5678</div>
+        </div>
+        <div class="card" onclick="go('resource-detail')">
+          <div class="flex flex-between items-center" style="margin-bottom:8px;">
+            <span class="tag" style="background:#FCE7F3;color:#BE185D;">需求</span>
+            <span style="font-size:12px;color:var(--text-light);">技能 · 5小时前</span>
+          </div>
+          <div style="font-weight:700;margin-bottom:6px;">求推荐靠谱的东北菜厨师</div>
+          <div style="font-size:13px;color:var(--text-light);line-height:1.5;">新店筹备中，需要会做锅包肉、铁锅炖的师傅，可全职可合作。</div>
+          <div style="margin-top:10px;font-size:13px;color:var(--text-light);">联系方式：139****1234</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resource Detail -->
+    <div id="resource-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">供需详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="flex flex-between items-center" style="margin-bottom:12px;">
+            <span class="tag" style="background:#DBEAFE;color:#1D4ED8;">供给</span>
+            <span style="font-size:12px;color:var(--text-light);">房源 · 2小时前</span>
+          </div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:12px;">宝安两室一厅次卧出租，限东北老乡</div>
+          <div style="font-size:14px;line-height:1.8;color:var(--text);">
+            家电齐全，近地铁，月租1500，押一付一。<br>
+            希望室友是爱干净、不养宠物的老乡。<br>
+            可短租，随时看房。
+          </div>
+          <div class="post-header" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div class="avatar">房</div>
+            <div><div class="post-author">房东大姐</div><div class="post-time">家乡：哈尔滨 · 现居：深圳</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="flex flex-between items-center">
+            <div>
+              <div style="font-weight:700;margin-bottom:4px;">联系方式</div>
+              <div style="font-size:13px;color:var(--text-light);">138****5678</div>
+            </div>
+            <button class="btn btn-primary" onclick="showToast('支付 ¥2 查看完整联系方式')">查看联系方式 ¥2</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invest -->
+    <div id="invest" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">投资对接</div>
+          <div class="header-right" onclick="go('post-invest')">+</div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">全部</div>
+        <div class="tab">投资意愿</div>
+        <div class="tab">融资需求</div>
+      </div>
+      <div class="section" style="padding-top:0;">
+        <div class="card" onclick="go('invest-detail')">
+          <div class="flex flex-between items-center" style="margin-bottom:8px;">
+            <span class="tag" style="background:#DCFCE7;color:#15803D;">投资意愿</span>
+            <span style="font-size:12px;color:var(--text-light);">昨天</span>
+          </div>
+          <div style="font-weight:700;margin-bottom:6px;">寻找东北餐饮连锁项目，可投50-100万</div>
+          <div style="font-size:13px;color:var(--text-light);line-height:1.5;">本人有多年餐饮投资经验，看好东北菜在外地的市场，寻成熟团队或单店模型。</div>
+          <div style="margin-top:10px;font-size:13px;color:var(--text-light);">意向金额：50-100万 · 行业：餐饮</div>
+        </div>
+        <div class="card" onclick="go('invest-detail')">
+          <div class="flex flex-between items-center" style="margin-bottom:8px;">
+            <span class="tag" style="background:#FEF3C7;color:#B45309;">融资需求</span>
+            <span style="font-size:12px;color:var(--text-light);">3天前</span>
+          </div>
+          <div style="font-weight:700;margin-bottom:6px;">东北特产电商寻求天使轮融资</div>
+          <div style="font-size:13px;color:var(--text-light);line-height:1.5;">已跑通供应链，月GMV 30万+，现寻求30万资金用于市场推广。</div>
+          <div style="margin-top:10px;font-size:13px;color:var(--text-light);">意向金额：30万 · 行业：电商</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invest Detail -->
+    <div id="invest-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">投资详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="card">
+          <div class="flex flex-between items-center" style="margin-bottom:12px;">
+            <span class="tag" style="background:#DCFCE7;color:#15803D;">投资意愿</span>
+            <span style="font-size:12px;color:var(--text-light);">昨天</span>
+          </div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:12px;">寻找东北餐饮连锁项目，可投50-100万</div>
+          <div style="font-size:14px;line-height:1.8;color:var(--text);">
+            本人有多年餐饮投资经验，看好东北菜在外地市场的潜力。<br>
+            投资偏好：已有单店盈利模型，团队有餐饮背景。<br>
+            投资金额：50-100万，可占股可债权。<br>
+            欢迎有项目的老乡联系平台撮合。
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;margin-bottom:8px;">平台联系方式</div>
+          <div style="font-size:14px;color:var(--text-light);margin-bottom:12px;">投资对接由平台统一撮合，请联系客服：</div>
+          <div class="flex flex-between items-center" style="margin-bottom:10px;">
+            <span>客服微信</span>
+            <span style="font-weight:700;">xiangbeixiaoyuan</span>
+          </div>
+          <div class="flex flex-between items-center">
+            <span>客服电话</span>
+            <span style="font-weight:700;">400-888-0000</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg fixed-bottom-btn" onclick="showToast('已复制平台联系方式')">复制联系方式</button>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="page">
+      <div class="profile-header">
+        <div class="profile-user">
+          <div class="profile-avatar">我</div>
+          <div>
+            <div class="profile-name">东北老铁</div>
+            <div class="profile-tags"><span class="profile-tag">家乡：哈尔滨</span><span class="profile-tag">现居：深圳</span><span class="profile-tag">已认证</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section" style="margin-top:-16px;">
+        <div class="card">
+          <div class="menu-grid">
+            <div class="menu-item" onclick="go('orders')">
+              <div class="menu-icon">📝</div>
+              <div class="menu-name">我的订单</div>
+            </div>
+            <div class="menu-item" onclick="go('my-posts')">
+              <div class="menu-icon">📤</div>
+              <div class="menu-name">我的发布</div>
+            </div>
+            <div class="menu-item" onclick="showToast('功能开发中')">
+              <div class="menu-icon">💬</div>
+              <div class="menu-name">我的消息</div>
+            </div>
+            <div class="menu-item" onclick="showToast('功能开发中')">
+              <div class="menu-icon">⭐</div>
+              <div class="menu-name">我的收藏</div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-list">
+          <div class="menu-list-item" onclick="showToast('编辑资料开发中')">
+            <span>编辑资料</span>
+            <span style="color:#999;">›</span>
+          </div>
+          <div class="menu-list-item" onclick="showToast('收货地址开发中')">
+            <span>收货地址</span>
+            <span style="color:#999;">›</span>
+          </div>
+          <div class="menu-list-item" onclick="showToast('认证中心开发中')">
+            <span>老乡认证</span>
+            <span style="color:#999;">›</span>
+          </div>
+        </div>
+        <div class="menu-list" style="margin-top:12px;">
+          <div class="menu-list-item" onclick="showToast('联系平台')">
+            <span>联系平台</span>
+            <span style="color:#999;">›</span>
+          </div>
+          <div class="menu-list-item" onclick="showToast('意见反馈')">
+            <span>意见反馈</span>
+            <span style="color:#999;">›</span>
+          </div>
+          <div class="menu-list-item" onclick="showToast('关于向北小院')">
+            <span>关于向北小院</span>
+            <span style="color:#999;">›</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div id="orders" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">我的订单</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">餐饮</div>
+        <div class="tab">商城</div>
+      </div>
+      <div class="section" style="padding-top:0;">
+        <div class="card">
+          <div class="flex flex-between items-center" style="margin-bottom:10px;">
+            <span style="font-weight:700;">向北小院 · 南山店</span>
+            <span class="status-badge warning">待确认</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">北大荒厅 · 12月16日 晚市 · 8人</div>
+          <div style="font-size:13px;color:var(--text-light);">预订时间：2026-12-10 14:30</div>
+        </div>
+        <div class="card">
+          <div class="flex flex-between items-center" style="margin-bottom:10px;">
+            <span style="font-weight:700;">平台自营 · 五常大米</span>
+            <span class="status-badge">待收货</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-light);margin-bottom:8px;">东北五常大米 5kg × 1</div>
+          <div style="font-size:13px;color:var(--text-light);">订单金额：¥68</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Posts -->
+    <div id="my-posts" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">我的发布</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">社群帖</div>
+        <div class="tab">供需帖</div>
+        <div class="tab">投资帖</div>
+      </div>
+      <div class="section" style="padding-top:0;">
+        <div class="card post-card" onclick="go('community-detail')">
+          <div class="post-title">周末南山店铁锅炖，还差4人，老乡们一起聚聚！</div>
+          <div class="post-content">刚来深圳半年，想找几个东北老乡一起热闹热闹...</div>
+          <div class="post-footer"><span>👁 128</span><span>💬 23</span><span>👍 45</span></div>
+          <div style="margin-top:10px;"><span class="status-badge">已发布</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book Room -->
+    <div id="book-room" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">订包厢</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="room-list">
+        <div class="room-card">
+          <img class="room-card-img" src="room-xuexiang.png">
+          <div class="room-card-body">
+            <div class="room-card-title">雪乡厅</div>
+            <div class="room-card-meta">8人桌 · 可容纳 6-10 人 · 低消 ¥300</div>
+            <div class="room-card-tags">
+              <span class="room-card-tag">暖炕座位</span>
+              <span class="room-card-tag">独立音响</span>
+              <span class="room-card-tag">可预订</span>
+            </div>
+            <div class="room-card-bottom">
+              <div class="room-card-price">¥200<small> 定金</small></div>
+              <button class="room-card-btn" onclick="goRoomDetail('xuexiang')">查看详情</button>
+            </div>
+          </div>
+        </div>
+        <div class="room-card">
+          <img class="room-card-img" src="room-beidahuang.png">
+          <div class="room-card-body">
+            <div class="room-card-title">北大荒厅</div>
+            <div class="room-card-meta">12人桌 · 可容纳 10-16 人 · 低消 ¥500</div>
+            <div class="room-card-tags">
+              <span class="room-card-tag">长条木桌</span>
+              <span class="room-card-tag">团建聚会</span>
+              <span class="room-card-tag">可预订</span>
+            </div>
+            <div class="room-card-bottom">
+              <div class="room-card-price">¥300<small> 定金</small></div>
+              <button class="room-card-btn" onclick="goRoomDetail('beidahuang')">查看详情</button>
+            </div>
+          </div>
+        </div>
+        <div class="room-card">
+          <img class="room-card-img" src="room-changbai.png">
+          <div class="room-card-body">
+            <div class="room-card-title">长白山厅</div>
+            <div class="room-card-meta">6人桌 · 可容纳 4-8 人 · 低消 ¥400</div>
+            <div class="room-card-tags">
+              <span class="room-card-tag">简约现代</span>
+              <span class="room-card-tag">家庭聚餐</span>
+              <span class="room-card-tag">可预订</span>
+            </div>
+            <div class="room-card-bottom">
+              <div class="room-card-price">¥250<small> 定金</small></div>
+              <button class="room-card-btn" onclick="goRoomDetail('changbai')">查看详情</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Detail -->
+    <div id="room-detail" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">包厢详情</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <img class="room-detail-hero" id="roomHero" src="room-xuexiang.png">
+      <div class="room-detail-body">
+        <div class="room-detail-section">
+          <div class="room-detail-title" id="roomTitle">雪乡厅</div>
+          <div class="room-detail-subtitle" id="roomSubtitle">8人桌 · 可容纳 6-10 人 · 低消 ¥300</div>
+          <div class="room-detail-tags" id="roomTags">
+            <span class="room-detail-tag">暖炕座位</span>
+            <span class="room-detail-tag">独立音响</span>
+            <span class="room-detail-tag">K歌设备</span>
+          </div>
+        </div>
+        <div class="room-detail-section">
+          <div class="room-detail-section-title">图文介绍</div>
+          <div class="room-detail-gallery" id="roomGallery">
+            <img src="room-xuexiang.png">
+            <img src="room-xuexiang.png">
+            <img src="room-xuexiang.png">
+          </div>
+          <div class="room-detail-desc" id="roomDesc">
+            雪乡厅以东北雪乡为主题，红木质家具搭配暖炕座位，墙上挂满了玉米辣椒串和红灯笼，营造出浓浓的老家氛围。适合家庭聚会、老乡聚餐，配备独立音响，吃完还能唱几句二人转。
+          </div>
+        </div>
+        <div class="room-detail-section">
+          <div class="room-detail-section-title">价格说明</div>
+          <div class="room-price-row">
+            <span class="price">¥<span id="roomDeposit">200</span></span>
+            <span class="unit">定金</span>
+            <span class="tip">到店后支付尾款，尾款可线下支付</span>
+          </div>
+        </div>
+        <div class="room-detail-section">
+          <div class="room-detail-section-title">预订信息</div>
+          <div class="room-form-tip">支付定金锁定包厢，到店后支付尾款，尾款支持线下扫码或现金支付。</div>
+          <div class="form-group">
+            <label class="form-label">用餐日期</label>
+            <div class="chip-row">
+              <div class="chip active" onclick="selectChip(this)">今天</div>
+              <div class="chip" onclick="selectChip(this)">明天</div>
+              <div class="chip" onclick="selectChip(this)">后天</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">用餐时段</label>
+            <div class="chip-row">
+              <div class="chip active" onclick="selectChip(this)">午市 11:00</div>
+              <div class="chip" onclick="selectChip(this)">晚市 17:00</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">用餐人数</label>
+            <input class="form-input" type="number" placeholder="请输入用餐人数" value="8">
+          </div>
+          <div class="form-group">
+            <label class="form-label">联系人</label>
+            <input class="form-input" placeholder="请输入联系人姓名">
+          </div>
+          <div class="form-group">
+            <label class="form-label">手机号</label>
+            <input class="form-input" placeholder="请输入手机号">
+          </div>
+        </div>
+      </div>
+      <div class="fixed-bottom-btn">
+        <div class="room-price-row">
+          <span class="unit">需付定金</span>
+          <span class="price">¥<span id="roomDepositBottom">200</span></span>
+          <span class="tip">尾款到店支付</span>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitRoomBook()">支付定金预订</button>
+      </div>
+    </div>
+
+    <!-- Pre Order -->
+    <div id="pre-order" class="page no-pb">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">预点菜</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="preorder-shop" onclick="go('dining-detail')">
+        <div class="preorder-shop-icon">📍</div>
+        <div style="flex:1;min-width:0;">
+          <div class="preorder-shop-title">向北小院 · 南山店</div>
+          <div class="preorder-shop-meta">营业时间：11:00 - 22:00<br>深圳市南山区科技园xx路12号</div>
+        </div>
+        <div class="preorder-shop-arrow">›</div>
+      </div>
+      <div class="preorder-layout">
+        <div class="preorder-categories">
+          <div class="preorder-category active" data-cat="hot" onclick="preorderFilter('hot')">热菜</div>
+          <div class="preorder-category" data-cat="stew" onclick="preorderFilter('stew')">炖菜</div>
+          <div class="preorder-category" data-cat="cold" onclick="preorderFilter('cold')">凉菜</div>
+          <div class="preorder-category" data-cat="staple" onclick="preorderFilter('staple')">主食</div>
+          <div class="preorder-category" data-cat="soup" onclick="preorderFilter('soup')">汤类</div>
+        </div>
+        <div class="preorder-menu">
+          <div class="preorder-menu-group" data-cat="hot">
+            <div class="preorder-menu-title">热菜</div>
+            <div class="preorder-dish" data-name="老式锅包肉" data-price="58" data-img="dish-guobaorou.png">
+              <img class="preorder-dish-img" src="dish-guobaorou.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">老式锅包肉</div>
+                  <div class="preorder-dish-desc">外酥里嫩 酸甜可口</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>58</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="东北地三鲜" data-price="28" data-img="dish-disanxian.png">
+              <img class="preorder-dish-img" src="dish-disanxian.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">东北地三鲜</div>
+                  <div class="preorder-dish-desc">茄子土豆青椒 经典下饭</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>28</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="溜肉段" data-price="48" data-img="dish-liuroudian.png">
+              <img class="preorder-dish-img" src="dish-liuroudian.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">溜肉段</div>
+                  <div class="preorder-dish-desc">咸香酥脆 东北老味道</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>48</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preorder-menu-group" data-cat="stew" style="display:none;">
+            <div class="preorder-menu-title">炖菜</div>
+            <div class="preorder-dish" data-name="铁锅炖大鹅" data-price="168" data-img="dish-dae.png">
+              <img class="preorder-dish-img" src="dish-dae.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">铁锅炖大鹅</div>
+                  <div class="preorder-dish-desc">鹅肉软烂 玉米饼贴锅边</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>168</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="小鸡炖蘑菇" data-price="88" data-img="dish-xiaoji.png">
+              <img class="preorder-dish-img" src="dish-xiaoji.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">小鸡炖蘑菇</div>
+                  <div class="preorder-dish-desc">榛蘑粉条炖土鸡</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>88</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="杀猪菜" data-price="68" data-img="dish-shazhucai.png">
+              <img class="preorder-dish-img" src="dish-shazhucai.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">杀猪菜</div>
+                  <div class="preorder-dish-desc">酸菜白肉血肠 一锅出</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>68</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preorder-menu-group" data-cat="cold" style="display:none;">
+            <div class="preorder-menu-title">凉菜</div>
+            <div class="preorder-dish" data-name="东北大拉皮" data-price="22" data-img="dish-lapi.png">
+              <img class="preorder-dish-img" src="dish-lapi.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">东北大拉皮</div>
+                  <div class="preorder-dish-desc">麻酱蒜汁 爽滑开胃</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>22</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="东北冻梨" data-price="12" data-img="dish-dongli.png">
+              <img class="preorder-dish-img" src="dish-dongli.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">东北冻梨</div>
+                  <div class="preorder-dish-desc">冰甜多汁 解腻神器</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>12</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preorder-menu-group" data-cat="staple" style="display:none;">
+            <div class="preorder-menu-title">主食</div>
+            <div class="preorder-dish" data-name="酸菜猪肉饺子" data-price="32" data-img="dish-jiaozi.png">
+              <img class="preorder-dish-img" src="dish-jiaozi.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">酸菜猪肉饺子</div>
+                  <div class="preorder-dish-desc">皮薄馅大 一口爆汁</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>32</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="东北大饭包" data-price="18" data-img="dish-fanbao.png">
+              <img class="preorder-dish-img" src="dish-fanbao.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">东北大饭包</div>
+                  <div class="preorder-dish-desc">菜叶包饭 鸡蛋酱香</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>18</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preorder-dish" data-name="粘豆包" data-price="16" data-img="dish-niandoubao.png">
+              <img class="preorder-dish-img" src="dish-niandoubao.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">粘豆包</div>
+                  <div class="preorder-dish-desc">外酥里糯 蘸白糖吃</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>16</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preorder-menu-group" data-cat="soup" style="display:none;">
+            <div class="preorder-menu-title">汤类</div>
+            <div class="preorder-dish" data-name="酸菜白肉血肠汤" data-price="38" data-img="dish-suancai.png">
+              <img class="preorder-dish-img" src="dish-suancai.png">
+              <div class="preorder-dish-info">
+                <div>
+                  <div class="preorder-dish-name">酸菜白肉血肠汤</div>
+                  <div class="preorder-dish-desc">酸爽暖胃 老汤慢炖</div>
+                </div>
+                <div class="preorder-dish-action">
+                  <div class="preorder-dish-price"><small>¥</small>38</div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <button class="preorder-minus-btn" style="display:none;" onclick="preorderChange(this,-1)">−</button>
+                    <span class="preorder-qty" style="display:none;">0</span>
+                    <button class="preorder-add-btn" onclick="preorderChange(this,1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="preorder-cart-bar">
+        <div class="preorder-cart-icon">🛒<span class="preorder-cart-badge" id="cartBadge" style="display:none;">0</span></div>
+        <div class="preorder-cart-info">
+          <div class="preorder-cart-total">合计 <strong>¥<span id="cartTotal">0</span></strong></div>
+          <div class="preorder-cart-tip">到店出示预点单，直接上菜</div>
+        </div>
+        <button class="preorder-cart-btn" id="cartBtn" onclick="goPreOrderConfirm()">去结算</button>
+      </div>
+    </div>
+
+    <!-- Pre Order Confirm -->
+    <div id="pre-order-confirm" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">确认预点单</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:12px;padding-bottom:120px;">
+        <div class="confirm-section">
+          <div class="confirm-title">向北小院 · 南山店</div>
+          <div id="confirmDishList">
+            <!-- 动态填充 -->
+          </div>
+          <div class="confirm-total">
+            <span class="confirm-total-label">合计</span>
+            <span class="confirm-total-price">¥<span id="confirmTotalPrice">0</span></span>
+          </div>
+        </div>
+
+        <div class="confirm-section">
+          <div class="confirm-title">订单备注</div>
+          <textarea class="form-textarea" id="preOrderRemark" placeholder="请输入备注，如口味偏好、忌口等…"></textarea>
+        </div>
+
+        <div class="confirm-section" style="background:transparent;box-shadow:none;padding:0;margin-top:16px;">
+          <div class="confirm-title">支付方式</div>
+          <div class="payment-option active" data-pay="wechat" onclick="selectPayMethod(this)">
+            <div class="payment-icon wechat">💬</div>
+            <div class="payment-name">微信支付</div>
+            <div class="payment-check">✓</div>
+          </div>
+          <div class="payment-option" data-pay="balance" onclick="selectPayMethod(this)">
+            <div class="payment-icon balance">💰</div>
+            <div class="payment-name">余额支付</div>
+            <div class="payment-name" style="flex:none;font-size:12px;color:#999;font-weight:400;">可用余额 ¥328.00</div>
+            <div class="payment-check"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fixed-bottom-btn">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:14px;color:var(--text-light);">实付</span>
+          <span style="font-size:22px;color:var(--primary);font-weight:700;">¥<span id="payTotalPrice">0</span></span>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitPreOrderConfirm()">确认支付</button>
+      </div>
+    </div>
+
+    <!-- Post Invest -->
+    <div id="post-invest" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">发布投资对接</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:12px;">
+        <div class="form-group">
+          <label class="form-label">项目标题</label>
+          <input class="form-input" placeholder="如：东北铁锅炖连锁旗舰店融资">
+        </div>
+        <div class="form-group">
+          <label class="form-label">投资方向</label>
+          <div class="chip-row">
+            <div class="chip active" onclick="selectChip(this)">餐饮</div>
+            <div class="chip" onclick="selectChip(this)">特产</div>
+            <div class="chip" onclick="selectChip(this)">文旅</div>
+            <div class="chip" onclick="selectChip(this)">其他</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">融资额度</label>
+          <input class="form-input" placeholder="如：50万 - 100万">
+        </div>
+        <div class="form-group">
+          <label class="form-label">项目介绍</label>
+          <textarea class="form-textarea" placeholder="介绍项目背景、核心优势与资金用途…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系方式</label>
+          <input class="form-input" placeholder="微信 / 手机号">
+        </div>
+      </div>
+      <div class="fixed-bottom-btn">
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitPost('invest')">发布</button>
+      </div>
+    </div>
+
+    <!-- Post Resource -->
+    <div id="post-resource" class="page">
+      <div class="header">
+        <div class="header-row">
+          <div class="header-back" onclick="back()">‹</div>
+          <div class="header-title">发布资源对接</div>
+          <div class="header-right"></div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:12px;">
+        <div class="form-group">
+          <label class="form-label">资源标题</label>
+          <input class="form-input" placeholder="如：哈尔滨本地冷链仓储资源">
+        </div>
+        <div class="form-group">
+          <label class="form-label">资源类型</label>
+          <div class="chip-row">
+            <div class="chip active" onclick="selectChip(this)">场地</div>
+            <div class="chip" onclick="selectChip(this)">供应链</div>
+            <div class="chip" onclick="selectChip(this)">渠道</div>
+            <div class="chip" onclick="selectChip(this)">人力</div>
+            <div class="chip" onclick="selectChip(this)">技术</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">规格 / 数量</label>
+          <input class="form-input" placeholder="如：仓储面积 500㎡ / 月产能 1万件">
+        </div>
+        <div class="form-group">
+          <label class="form-label">所在地</label>
+          <input class="form-input" placeholder="如：黑龙江·哈尔滨">
+        </div>
+        <div class="form-group">
+          <label class="form-label">资源说明</label>
+          <textarea class="form-textarea" placeholder="描述资源详情、合作方式与时间…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系方式</label>
+          <input class="form-input" placeholder="微信 / 手机号">
+        </div>
+      </div>
+      <div class="fixed-bottom-btn">
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitPost('resource')">发布</button>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="bottomNav">
+      <div class="nav-item active" data-page="home" onclick="go('home')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v10h-5v-7H11v7H6V11H3l9-8z"/></svg>
+        <span>首页</span>
+      </div>
+      <div class="nav-item" data-page="dining" onclick="go('dining')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span>餐饮</span>
+      </div>
+      <div class="nav-item" onclick="showPostSheet()">
+        <div class="nav-plus">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+      <div class="nav-item" data-page="mall" onclick="go('mall')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3zm7 17H5V8h14v12zm-7-8c-1.66 0-3-1.34-3-3H7c0 2.76 2.24 5 5 5s5-2.24 5-5h-2c0 1.66-1.34 3-3 3z"/></svg>
+        <span>商城</span>
+      </div>
+      <div class="nav-item" data-page="profile" onclick="go('profile')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>我的</span>
+      </div>
+    </div>
+
+    <!-- Action Sheet -->
+    <div class="action-sheet" id="postSheet" onclick="hidePostSheet(event)">
+      <div class="action-sheet-body" onclick="event.stopPropagation()">
+        <div class="action-sheet-title">发布内容</div>
+        <div class="action-sheet-item" onclick="go('community');hidePostSheet(event)">发布社群帖子</div>
+        <div class="action-sheet-item" onclick="go('resource');hidePostSheet(event)">发布供需信息</div>
+        <div class="action-sheet-item" onclick="go('invest');hidePostSheet(event)">发布投资对接</div>
+        <div class="action-sheet-item" onclick="hidePostSheet(event)">取消</div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    const pagesWithoutNav = ['loading','book-room','room-detail','pre-order','pre-order-confirm','post-invest','post-resource','mall-cart','mall-confirm','merchant-detail','welfare-signup'];
+    const pagesWithBack = ['dining','dining-detail','community','community-detail','mall','mall-product','welfare','welfare-detail','resource','resource-detail','invest','invest-detail','profile','orders','my-posts','book-room','room-detail','pre-order','pre-order-confirm','post-invest','post-resource','mall-cart','mall-confirm','merchant-detail','welfare-signup'];
+    let historyStack = [];
+
+    function go(pageId) {
+      const current = document.querySelector('.page.active');
+      if (current && current.id !== 'loading') {
+        historyStack.push(current.id);
+      }
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById(pageId);
+      if (target) target.classList.add('active');
+      target.scrollTop = 0;
+      if (pageId === 'pre-order') resetPreOrder();
+      if (pageId === 'mall-cart') renderCart();
+      if (pageId === 'mall') updateCartBadge();
+      updateNav(pageId);
+      updateBottomNav(pageId);
+    }
+
+    function back() {
+      const prev = historyStack.pop() || 'home';
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(prev).classList.add('active');
+      updateNav(prev);
+      updateBottomNav(prev);
+    }
+
+    function updateNav(pageId) {
+      const bottomNav = document.getElementById('bottomNav');
+      if (pagesWithoutNav.includes(pageId)) {
+        bottomNav.style.display = 'none';
+      } else {
+        bottomNav.style.display = 'flex';
+      }
+    }
+
+    function updateBottomNav(pageId) {
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.page === pageId) item.classList.add('active');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    function selectChip(el) {
+      const row = el.parentElement;
+      row.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function selectOption(el) {
+      const group = el.parentElement;
+      group.querySelectorAll('.list-item').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // 商城购物车逻辑
+    let cart = [
+      { id: 'dami', name: '东北五常大米 稻花香2号 5kg', price: 68, img: 'prod-dami.png', qty: 1, checked: true },
+      { id: 'hongchang', name: '哈尔滨红肠 500g', price: 45, img: 'prod-hongchang.png', qty: 2, checked: true },
+      { id: 'gewasi', name: '秋林格瓦斯 1L', price: 16, img: 'prod-gewasi.png', qty: 1, checked: false }
+    ];
+
+    function updateCartBadge() {
+      const badge = document.getElementById('mallCartBadge');
+      const total = cart.reduce((s, i) => s + i.qty, 0);
+      if (total > 0) {
+        badge.textContent = total > 99 ? '99+' : total;
+        badge.classList.remove('hide');
+      } else {
+        badge.classList.add('hide');
+      }
+    }
+
+    function addToCart(name, price, img) {
+      const exist = cart.find(i => i.name === name);
+      if (exist) {
+        exist.qty += 1;
+      } else {
+        cart.push({ id: 'g' + Date.now(), name, price, img, qty: 1, checked: true });
+      }
+      updateCartBadge();
+      showToast('已加入购物车');
+    }
+
+    function buyNow(name, price, img) {
+      cart = [{ id: 'g' + Date.now(), name, price, img, qty: 1, checked: true }];
+      updateCartBadge();
+      goConfirm();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cartList');
+      if (!cart.length) {
+        list.innerHTML = '<div class="cart-empty"><div class="ce-icon">🛒</div><div>购物车还是空的</div><div style="margin-top:14px;"><button class="btn btn-primary" onclick="go(\'mall\')">去逛逛</button></div></div>';
+        document.getElementById('cartTotal').textContent = '¥0';
+        document.getElementById('cartAllCheck').classList.remove('on');
+        return;
+      }
+      list.innerHTML = cart.map(i => `
+        <div class="cart-item">
+          <div class="cart-check ${i.checked ? 'on' : ''}" onclick="toggleCheck('${i.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 6"/></svg>
+          </div>
+          <img src="${i.img}" alt="${i.name}">
+          <div class="cart-info">
+            <div class="cart-name">${i.name}</div>
+            <div class="cart-price"><small>¥</small>${i.price}</div>
+            <div class="cart-stepper">
+              <button class="cart-step-btn" onclick="changeQty('${i.id}', -1)">−</button>
+              <span class="cart-step-qty">${i.qty}</span>
+              <button class="cart-step-btn" onclick="changeQty('${i.id}', 1)">+</button>
+            </div>
+          </div>
+          <div class="cart-del" onclick="delCart('${i.id}')">🗑️</div>
+        </div>`).join('');
+      updateCartTotal();
+    }
+
+    function updateCartTotal() {
+      const total = cart.filter(i => i.checked).reduce((s, i) => s + i.price * i.qty, 0);
+      document.getElementById('cartTotal').textContent = '¥' + total;
+      const allCheck = document.getElementById('cartAllCheck');
+      allCheck.classList.toggle('on', cart.length > 0 && cart.every(i => i.checked));
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty = Math.max(1, item.qty + delta);
+      renderCart();
+      updateCartBadge();
+    }
+
+    function delCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      renderCart();
+      updateCartBadge();
+    }
+
+    function toggleCheck(id) {
+      const item = cart.find(i => i.id === id);
+      if (item) { item.checked = !item.checked; renderCart(); }
+    }
+
+    function toggleAll(el) {
+      const next = !el.classList.contains('on');
+      cart.forEach(i => i.checked = next);
+      renderCart();
+    }
+
+    function goConfirm() {
+      const sel = cart.filter(i => i.checked);
+      if (!sel.length) { showToast('请选择商品'); return; }
+      const box = document.getElementById('confirmGoods');
+      box.innerHTML = sel.map(i => `
+        <div class="cart-item">
+          <img src="${i.img}" alt="${i.name}">
+          <div class="cart-info">
+            <div class="cart-name">${i.name}</div>
+            <div class="cart-price"><small>¥</small>${i.price}</div>
+          </div>
+          <div class="cart-step-qty" style="font-size:13px;color:var(--text-light);">x${i.qty}</div>
+        </div>`).join('');
+      const total = sel.reduce((s, i) => s + i.price * i.qty, 0);
+      const coupon = total >= 99 ? 10 : 0;
+      document.getElementById('confirmTotal').textContent = '¥' + (total - coupon);
+      go('mall-confirm');
+    }
+
+    function submitOrder() {
+      showToast('订单提交成功');
+      const selIds = cart.filter(i => i.checked).map(i => i.id);
+      cart = cart.filter(i => !selIds.includes(i.id));
+      updateCartBadge();
+      setTimeout(() => { go('mall'); renderCart(); }, 1500);
+    }
+
+    // 预点菜逻辑
+    let preOrderCart = {};
+    function preorderFilter(cat) {
+      document.querySelectorAll('.preorder-category').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.preorder-category[data-cat="${cat}"]`).classList.add('active');
+      document.querySelectorAll('.preorder-menu-group').forEach(g => g.style.display = g.dataset.cat === cat ? 'block' : 'none');
+    }
+
+    function preorderChange(btn, delta) {
+      const dish = btn.closest('.preorder-dish');
+      const name = dish.dataset.name;
+      const price = parseInt(dish.dataset.price);
+      let qty = preOrderCart[name] || 0;
+      qty += delta;
+      if (qty < 0) qty = 0;
+      if (qty === 0) delete preOrderCart[name];
+      else preOrderCart[name] = qty;
+      const qtyEl = dish.querySelector('.preorder-qty');
+      const minusEl = dish.querySelector('.preorder-minus-btn');
+      qtyEl.textContent = qty;
+      if (qty > 0) { qtyEl.style.display = 'block'; minusEl.style.display = 'flex'; }
+      else { qtyEl.style.display = 'none'; minusEl.style.display = 'none'; }
+      updateCartBar();
+    }
+
+    function updateCartBar() {
+      let total = 0, count = 0;
+      document.querySelectorAll('.preorder-dish').forEach(d => {
+        const name = d.dataset.name;
+        const price = parseInt(d.dataset.price);
+        const qty = preOrderCart[name] || 0;
+        total += qty * price;
+        count += qty;
+      });
+      document.getElementById('cartTotal').textContent = total;
+      const badge = document.getElementById('cartBadge');
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'flex' : 'none';
+      const btn = document.getElementById('cartBtn');
+      if (total > 0) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+
+    function resetPreOrder() {
+      preOrderCart = {};
+      document.querySelectorAll('.preorder-dish').forEach(d => {
+        d.querySelector('.preorder-qty').textContent = '0';
+        d.querySelector('.preorder-qty').style.display = 'none';
+        d.querySelector('.preorder-minus-btn').style.display = 'none';
+      });
+      updateCartBar();
+    }
+
+    function goPreOrderConfirm() {
+      const total = parseInt(document.getElementById('cartTotal').textContent);
+      if (total <= 0) { showToast('请先选择菜品'); return; }
+      renderConfirm();
+      go('pre-order-confirm');
+    }
+
+    function renderConfirm() {
+      const list = document.getElementById('confirmDishList');
+      list.innerHTML = '';
+      let total = 0;
+      document.querySelectorAll('.preorder-dish').forEach(d => {
+        const name = d.dataset.name;
+        const price = parseInt(d.dataset.price);
+        const qty = preOrderCart[name] || 0;
+        if (qty > 0) {
+          total += qty * price;
+          list.innerHTML += `<div class="confirm-dish"><div class="confirm-dish-name">${name}<span>×${qty}</span></div><div class="confirm-dish-price">¥${qty * price}</div></div>`;
+        }
+      });
+      document.getElementById('confirmTotalPrice').textContent = total;
+      document.getElementById('payTotalPrice').textContent = total;
+    }
+
+    function selectPayMethod(el) {
+      const parent = el.parentElement;
+      parent.querySelectorAll('.payment-option').forEach(o => o.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function submitPreOrderConfirm() {
+      const total = document.getElementById('payTotalPrice').textContent;
+      showToast(`支付成功 ¥${total}，预点单已生成`);
+      setTimeout(() => go('orders'), 1500);
+    }
+
+    // 包厢数据与详情
+    const roomData = {
+      xuexiang: {
+        title: '雪乡厅',
+        subtitle: '8人桌 · 可容纳 6-10 人 · 低消 ¥300',
+        deposit: 200,
+        hero: 'room-xuexiang.png',
+        tags: ['暖炕座位','独立音响','K歌设备'],
+        gallery: ['room-xuexiang.png','room-xuexiang.png','room-xuexiang.png'],
+        desc: '雪乡厅以东北雪乡为主题，红木质家具搭配暖炕座位，墙上挂满了玉米辣椒串和红灯笼，营造出浓浓的老家氛围。适合家庭聚会、老乡聚餐，配备独立音响，吃完还能唱几句二人转。'
+      },
+      beidahuang: {
+        title: '北大荒厅',
+        subtitle: '12人桌 · 可容纳 10-16 人 · 低消 ¥500',
+        deposit: 300,
+        hero: 'room-beidahuang.png',
+        tags: ['长条木桌','团建聚会','投影幕布'],
+        gallery: ['room-beidahuang.png','room-beidahuang.png','room-beidahuang.png'],
+        desc: '北大荒厅还原东北乡村大院风格，长条木桌可轻松容纳16人，墙上贴着东北年画和剪纸，适合公司团建、老乡年会、家庭大聚会。配备投影幕布，可播放老照片、二人转。'
+      },
+      changbai: {
+        title: '长白山厅',
+        subtitle: '6人桌 · 可容纳 4-8 人 · 低消 ¥400',
+        deposit: 250,
+        hero: 'room-changbai.png',
+        tags: ['简约现代','家庭聚餐','落地窗景'],
+        gallery: ['room-changbai.png','room-changbai.png','room-changbai.png'],
+        desc: '长白山厅采用现代简约设计，圆木餐桌配皮质座椅，墙上挂着长白山风景画，落地窗外是绿意盎然的小院。适合家庭聚餐、商务小聚，环境安静私密。'
+      }
+    };
+
+    // 公益活动数据
+    const activityData = {
+      mianyi: {
+        title: '暖冬行动 · 为老乡送棉衣',
+        meta: '📅 12月15日 09:00 · 📍 龙华文化广场 · 已有 86 人报名',
+        status: 'open',
+        images: ['welfare-cover-mianyi.png','welfare-detail-mianyi-1.png','welfare-detail-mianyi-2.png'],
+        intro: '冬天来了，为在深困难老乡送去一份温暖。本次活动募集棉衣、棉被等御寒物资，欢迎老乡们报名参加志愿服务，也接受物资捐赠。',
+        notice: '点击下方「立即报名」按钮填写报名表单，提交后平台工作人员会在 3 个工作日内电话联系确认。现场需志愿者自备手套，物资捐赠可直接联系门店收货。'
+      },
+      shuji: {
+        title: '情系东北 · 为家乡小学捐书',
+        meta: '📅 长期有效 · 📍 线上登记 · 已捐 320 本',
+        status: 'open',
+        images: ['welfare-cover-shuji.png','welfare-cover-shuji.png'],
+        intro: '为东北偏远乡村小学募集课外读物与教辅资料，让家乡的孩子多看一本书、多一个梦想。所有捐赠图书将由平台统一打包、登记并寄送到对接学校。',
+        notice: '点击下方「立即报名」登记您要捐赠的图书种类和数量，平台将安排就近收货点，也可邮寄至指定仓库。捐赠满 20 本将获得电子公益证书。'
+      },
+      yizhen: {
+        title: '关爱老乡 · 社区义诊行',
+        meta: '📅 10月1日 · 📍 福田社区服务中心 · 累计服务 128 人次',
+        status: 'ended',
+        images: ['welfare-cover-yizhen.png','welfare-cover-yizhen.png'],
+        gallery: [
+          { img: 'welfare-cover-yizhen.png', text: '义诊当天，3 位来自东北老家的医生志愿者为社区老人测量血压、听诊心肺，耐心解答常见病用药问题，现场排起长队却井然有序。' },
+          { img: 'welfare-cover-yizhen.png', text: '活动还免费发放了常用非处方药品包和冬季保健手册，累计服务 128 人次，收到老乡们的一致好评。明年春天我们计划把义诊办进更多社区。' }
+        ]
+      },
+      jiaozi: {
+        title: '浓情年味 · 老乡春节包饺子',
+        meta: '📅 1月28日 · 📍 向北小院南山店 · 参与 56 人',
+        status: 'ended',
+        images: ['welfare-cover-jiaozi.png','welfare-cover-jiaozi.png'],
+        gallery: [
+          { img: 'welfare-cover-jiaozi.png', text: '除夕前夕，56 位东北老乡齐聚向北小院南山店，和面、调馅、擀皮、包饺子，热气腾腾的饺子里裹着满满的家乡味。' },
+          { img: 'welfare-cover-jiaozi.png', text: '大家边包边聊，从老家的新鲜事聊到在深圳打拼的酸甜苦辣。活动还为独居老人送去了现包的饺子，让年味延续到每家每户。' }
+        ]
+      }
+    };
+
+    function goWelfareDetail(id) {
+      const a = activityData[id];
+      if (!a) return;
+      currentWelfareId = id;
+      const carousel = document.getElementById('welfareCarousel');
+      const slidesHtml = a.images.map((src, i) => `<div class="banner-slide${i === 0 ? ' active' : ''}"><img src="${src}" alt="活动图${i + 1}"></div>`).join('');
+      const dotsHtml = a.images.map((_, i) => `<span class="banner-dot${i === 0 ? ' active' : ''}"></span>`).join('');
+      carousel.innerHTML = slidesHtml + `<div class="banner-dots">${dotsHtml}</div>`;
+      document.getElementById('welfareDetailTitle').textContent = a.title;
+      document.getElementById('welfareDetailMeta').textContent = a.meta;
+      const content = document.getElementById('welfareDetailContent');
+      const gallery = document.getElementById('welfareDetailGallery');
+      const btn = document.getElementById('welfareActionBtn');
+      if (a.status === 'open') {
+        content.style.display = '';
+        content.innerHTML = `
+          <div class="detail-section"><h3>活动简介</h3><p>${a.intro}</p></div>
+          <div class="detail-section"><h3>报名须知</h3><p>${a.notice}</p></div>`;
+        gallery.style.display = 'none';
+        btn.style.display = '';
+        btn.textContent = '立即报名';
+      } else {
+        content.style.display = 'none';
+        gallery.style.display = '';
+        gallery.innerHTML = a.gallery.map(g => `<div class="detail-section"><img src="${g.img}" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;display:block;"><p>${g.text}</p></div>`).join('');
+        btn.style.display = 'none';
+      }
+      go('welfare-detail');
+    }
+
+    // 公益报名
+    let currentWelfareId = 'mianyi';
+    function goWelfareSignup() {
+      const a = activityData[currentWelfareId];
+      document.getElementById('signupActivityTitle').textContent = a ? a.title : '活动报名';
+      document.getElementById('signupName').value = '';
+      document.getElementById('signupPhone').value = '';
+      document.getElementById('signupRegion').value = '';
+      document.getElementById('signupNote').value = '';
+      go('welfare-signup');
+    }
+
+    function submitWelfareSignup() {
+      const name = document.getElementById('signupName').value.trim();
+      const phone = document.getElementById('signupPhone').value.trim();
+      const region = document.getElementById('signupRegion').value.trim();
+      if (!name) { showToast('请输入姓名'); return; }
+      if (!/^1\d{10}$/.test(phone)) { showToast('请输入正确的 11 位手机号'); return; }
+      if (!region) { showToast('请填写所在地区'); return; }
+      showToast('报名提交成功，请等待工作人员联系');
+      setTimeout(() => go('welfare-detail'), 1500);
+    }
+
+    // 商家详情数据
+    const merchantData = {
+      laowang: {
+        name: '老王东北特产铺', logo: '王', banner: 'merchant-banner-laowang.png',
+        stats: '主营：山珍 · 干货 · 大米 · 月销500+ · 老乡信赖老店',
+        coupons: [{ name: '满 99 减 10', scope: '全场通用', date: '2026.12.31 前' }, { name: '满 199 减 30', scope: '山珍干货可用', date: '2026.12.31 前' }],
+        products: [
+          { name: '长白山野生榛蘑 250g', price: 45, sold: '已售 8,562', img: 'prod-zhenmo.png', isNew: true },
+          { name: '东北黑木耳 250g', price: 26, sold: '已售 3,204', img: 'prod-heimuer.png', isNew: false },
+          { name: '东北五常大米 稻花香2号 5kg', price: 68, sold: '已售 1.2万', img: 'prod-dami.png', isNew: false },
+          { name: '东北农家大酱 手工自制', price: 28, sold: '已售 5,231', img: 'prod-dajiang.png', isNew: true },
+          { name: '东北酸菜 整颗 2斤装', price: 19, sold: '已售 2,876', img: 'prod-suncai.png', isNew: false },
+          { name: '东北粘豆包 早餐组合', price: 22, sold: '已售 4,129', img: 'prod-niandoubao.png', isNew: true }
+        ]
+      },
+      xuexiang: {
+        name: '雪乡味道零食店', logo: '雪', banner: 'merchant-banner-xuexiang.png',
+        stats: '主营：零食 · 饮品 · 冻货 · 月销300+ · 新店入驻',
+        coupons: [{ name: '满 59 减 8', scope: '零食饮品可用', date: '2026.11.30 前' }, { name: '无门槛 5 元券', scope: '全场通用', date: '2026.11.30 前' }],
+        products: [
+          { name: '哈尔滨红肠 500g', price: 32, sold: '已售 6,908', img: 'prod-hongchang.png', isNew: true },
+          { name: '秋林格瓦斯 350ml×6', price: 36, sold: '已售 2,540', img: 'prod-gewasi.png', isNew: false },
+          { name: '东北粘豆包 早餐组合', price: 22, sold: '已售 4,129', img: 'prod-niandoubao.png', isNew: true },
+          { name: '延边苹果梨 5斤装', price: 39, sold: '已售 6,321', img: 'prod-pingguoli.png', isNew: false }
+        ]
+      },
+      dami: {
+        name: '五常大米直营店', logo: '米', banner: 'merchant-banner-laowang.png',
+        stats: '主营：五常大米 · 产地直发 · 月销800+ · 假一赔十',
+        coupons: [{ name: '满 68 减 6', scope: '大米专用', date: '2026.12.31 前' }],
+        products: [
+          { name: '东北五常大米 稻花香2号 5kg', price: 68, sold: '已售 1.2万', img: 'prod-dami.png', isNew: false },
+          { name: '五常长粒香 10kg 家庭装', price: 128, sold: '已售 3,215', img: 'prod-dami.png', isNew: true }
+        ]
+      },
+      shanhuo: {
+        name: '长白山林海山货', logo: '林', banner: 'merchant-banner-xuexiang.png',
+        stats: '主营：山珍 · 菌菇 · 干货 · 月销200+ · 产地自采',
+        coupons: [{ name: '满 99 减 10', scope: '山货专用', date: '2026.12.31 前' }],
+        products: [
+          { name: '长白山野生榛蘑 250g', price: 45, sold: '已售 8,562', img: 'prod-zhenmo.png', isNew: true },
+          { name: '东北黑木耳 250g', price: 26, sold: '已售 3,204', img: 'prod-heimuer.png', isNew: false },
+          { name: '东北酸菜 整颗 2斤装', price: 19, sold: '已售 2,876', img: 'prod-suncai.png', isNew: false }
+        ]
+      }
+    };
+
+    let currentMerchant = null;
+    let currentMerchantSort = 'default';
+
+    function productCardHtml(p) {
+      return `<div class="product-card" onclick="go('mall-product')">
+        <div class="product-img"><img src="${p.img}" alt="${p.name}"></div>
+        <div class="product-body"><div class="product-title">${p.name}</div><div class="product-price"><small>¥</small>${p.price}</div><div class="product-sold">${p.sold}</div></div>
+      </div>`;
+    }
+
+    function goMerchantDetail(id) {
+      const m = merchantData[id];
+      if (!m) return;
+      currentMerchant = m;
+      currentMerchantSort = 'default';
+      document.getElementById('merchantHero').querySelector('img').src = m.banner;
+      document.getElementById('merchantLogoBig').textContent = m.logo;
+      document.getElementById('merchantNameBig').textContent = m.name;
+      document.getElementById('merchantStats').textContent = m.stats;
+      const followBtn = document.getElementById('merchantFollow');
+      followBtn.textContent = '+ 关注';
+      followBtn.classList.remove('followed');
+      document.querySelectorAll('#merchantTabs .merchant-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+      document.querySelectorAll('.merchant-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('merchantFeatured').classList.add('active');
+      document.querySelectorAll('.merchant-filter-item').forEach(item => item.classList.toggle('active', item.textContent === '综合'));
+      renderMerchantProducts();
+      document.getElementById('merchantCouponList').innerHTML = m.coupons.map(c => `
+        <div class="coupon-item" onclick="showToast('领券成功')">
+          <div style="color:var(--primary);font-weight:700;font-size:16px;white-space:nowrap;">${c.name}</div>
+          <div style="flex:1;font-size:12px;color:var(--text-light);">${c.scope} · ${c.date}</div>
+          <span class="tag">领取</span>
+        </div>`).join('');
+      go('merchant-detail');
+    }
+
+    function renderMerchantProducts() {
+      if (!currentMerchant) return;
+      let list = currentMerchant.products.slice();
+      if (currentMerchantSort === 'price') list.sort((a, b) => a.price - b.price);
+      if (currentMerchantSort === 'sales') list.sort((a, b) => parseInt(b.sold.replace(/\D/g, '')) - parseInt(a.sold.replace(/\D/g, '')));
+      if (currentMerchantSort === 'new') list.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+      const rec = list.slice(0, 3);
+      document.getElementById('merchantRecGrid').innerHTML = rec.map(p => `
+        <div class="flash-card" onclick="go('mall-product')">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="flash-body"><div class="flash-title">${p.name}</div><div class="flash-price"><small>¥</small>${p.price}</div></div>
+        </div>`).join('');
+      const html = list.map(productCardHtml).join('');
+      document.getElementById('merchantProductGrid').innerHTML = html;
+      document.getElementById('merchantProductGrid2').innerHTML = html;
+    }
+
+    function switchMerchantTab(name, el) {
+      document.querySelectorAll('#merchantTabs .merchant-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.merchant-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('merchant' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+    }
+
+    function sortMerchant(type, el) {
+      currentMerchantSort = type;
+      document.querySelectorAll('.merchant-filter').forEach(f => {
+        f.querySelectorAll('.merchant-filter-item').forEach(item => item.classList.toggle('active', item.textContent === el.textContent));
+      });
+      renderMerchantProducts();
+    }
+
+    function toggleFollow(btn) {
+      if (btn.classList.toggle('followed')) {
+        btn.textContent = '已关注';
+        showToast('关注成功，上新会提醒你');
+      } else {
+        btn.textContent = '+ 关注';
+        showToast('已取消关注');
+      }
+    }
+
+    function goRoomDetail(roomId) {
+      const data = roomData[roomId];
+      if (!data) return;
+      document.getElementById('roomHero').src = data.hero;
+      document.getElementById('roomTitle').textContent = data.title;
+      document.getElementById('roomSubtitle').textContent = data.subtitle;
+      document.getElementById('roomDeposit').textContent = data.deposit;
+      document.getElementById('roomDepositBottom').textContent = data.deposit;
+      document.getElementById('roomDesc').textContent = data.desc;
+      const tagsEl = document.getElementById('roomTags');
+      tagsEl.innerHTML = data.tags.map(t => `<span class="room-detail-tag">${t}</span>`).join('');
+      const galleryEl = document.getElementById('roomGallery');
+      galleryEl.innerHTML = data.gallery.map(g => `<img src="${g}">`).join('');
+      go('room-detail');
+    }
+
+    function submitRoomBook() {
+      const deposit = document.getElementById('roomDepositBottom').textContent;
+      showToast(`定金 ¥${deposit} 支付成功，包厢已锁定`);
+      setTimeout(() => go('orders'), 1500);
+    }
+
+    function submitBook() {
+      showToast('预订申请已提交，等待商家确认');
+      setTimeout(() => go('orders'), 1200);
+    }
+
+    function submitPost(type) {
+      showToast('发布成功，等待平台审核');
+      setTimeout(() => go(type === 'invest' ? 'invest' : 'resource'), 1200);
+    }
+
+    function toggleLike(el) {
+      const isLiked = el.textContent.includes('❤️');
+      const count = parseInt(el.textContent.replace(/\D/g,''));
+      el.textContent = isLiked ? `👍 ${count-1}` : `❤️ ${count+1}`;
+      showToast(isLiked ? '取消点赞' : '点赞成功');
+    }
+
+    function showPostSheet() {
+      document.getElementById('postSheet').classList.add('show');
+    }
+
+    function hidePostSheet(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('postSheet').classList.remove('show');
+    }
+
+    // Banner auto slide（每个轮播独立切换）
+    setInterval(() => {
+      document.querySelectorAll('.banner').forEach(banner => {
+        const slides = banner.querySelectorAll('.banner-slide');
+        const dots = banner.querySelectorAll('.banner-dot');
+        if (!slides.length) return;
+        let idx = Array.from(slides).findIndex(s => s.classList.contains('active'));
+        if (idx < 0) idx = 0;
+        slides[idx].classList.remove('active');
+        if (dots[idx]) dots[idx].classList.remove('active');
+        idx = (idx + 1) % slides.length;
+        slides[idx].classList.add('active');
+        if (dots[idx]) dots[idx].classList.add('active');
+      });
+    }, 3500);
+
+
+    // 设备检测：电脑端套手机壳，移动端全屏
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone|webOS|BlackBerry/i.test(navigator.userAgent);
+    if (!isMobile) document.body.classList.add('desktop');
+
+    // Init
+    updateCartBadge();
+    setTimeout(() => {
+      go('home');
+      showToast('欢迎回到向北小院');
+    }, 2200);
+
+    // Tab switch visual
+    document.querySelectorAll('.tabs').forEach(container => {
+      container.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+        });
+      });
+    });
+
+    // 商城分类 tab 切换
+    document.querySelectorAll('.mall-tabs').forEach(container => {
+      container.querySelectorAll('.mall-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          container.querySelectorAll('.mall-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          showToast(`切换至：${tab.textContent}`);
+        });
+      });
+    });
+
+    // 商城秒杀倒计时
+    function updateMallCountdown() {
+      const el = document.getElementById('mallCountdown');
+      if (!el) return;
+      const end = new Date();
+      end.setHours(end.getHours() + 2);
+      end.setMinutes(end.getMinutes() + 15);
+      const pad = n => n.toString().padStart(2, '0');
+      setInterval(() => {
+        const now = new Date();
+        let diff = Math.floor((end - now) / 1000);
+        if (diff < 0) diff = 0;
+        const h = pad(Math.floor(diff / 3600));
+        const m = pad(Math.floor((diff % 3600) / 60));
+        const s = pad(diff % 60);
+        el.textContent = `距结束 ${h}:${m}:${s}`;
+      }, 1000);
+    }
+    updateMallCountdown();
+
+    // 商城商品加载更多
+    const mallMoreProducts = [
+      { img: 'prod-suncai.png', title: '东北酸菜 农家大缸腌制', price: 18, sold: '2,341' },
+      { img: 'prod-hongchang.png', title: '哈尔滨红肠 500g', price: 29.9, sold: '5,678' },
+      { img: 'prod-niandoubao.png', title: '东北粘豆包 黄米面', price: 22, sold: '1,892' },
+      { img: 'prod-zhenmo.png', title: '长白山榛蘑 500g', price: 78, sold: '3,456' }
+    ];
+    let mallLoadIndex = 0;
+    function loadMoreMall() {
+      const grid = document.getElementById('mallProductGrid');
+      const btn = document.getElementById('mallLoadMore');
+      if (!grid || !btn) return;
+      const batch = mallMoreProducts.slice(mallLoadIndex, mallLoadIndex + 2);
+      if (!batch.length) {
+        btn.textContent = '已经到底啦';
+        return;
+      }
+      batch.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.setAttribute('onclick', "go('mall-product')");
+        card.innerHTML = `<div class="product-img"><img src="${p.img}" alt="${p.title}"></div><div class="product-body"><div class="product-title">${p.title}</div><div class="product-price"><small>¥</small>${p.price}</div><div class="product-sold">已售 ${p.sold}</div></div>`;
+        grid.appendChild(card);
+      });
+      mallLoadIndex += batch.length;
+      if (mallLoadIndex >= mallMoreProducts.length) btn.textContent = '已经到底啦';
+    }
+  </script>
+</body>
+</html>
